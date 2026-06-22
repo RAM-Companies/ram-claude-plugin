@@ -4,20 +4,22 @@ Shared Claude Code skills and hooks for RAM React / TypeScript / Supabase / Verc
 
 ## Install
 
+Add the RAM Companies marketplace:
+
 ```bash
-claude add marketplace RAM-Companies/ram-claude-plugin
+claude plugin marketplace add RAM-Companies/ram-claude-plugin
 ```
 
-Then install the plugin from the marketplace:
+Then install the plugin:
 
 ```bash
-claude plugin install ram-companies/ram
+claude plugin install ram@ram-companies
 ```
 
 ## Update
 
 ```bash
-claude marketplace update ram-companies
+claude plugin marketplace update ram-companies
 ```
 
 ## Skills
@@ -38,12 +40,12 @@ claude marketplace update ram-companies
 
 Automatically wired when the plugin is enabled:
 
-| Hook                   | Trigger                | What it does                                                               |
-| ---------------------- | ---------------------- | -------------------------------------------------------------------------- |
-| `protect-generated.js` | PreToolUse Write/Edit  | Blocks edits to auto-generated `types.ts`; warns before editing migrations |
-| `format.js`            | PostToolUse Write/Edit | Runs ESLint `--fix` + Prettier on every saved file                         |
-| `post-write-checks.js` | PostToolUse Write/Edit | Flags `as any`, silent catch, inline Supabase in pages, hardcoded secrets  |
-| `stop-check.js`        | Stop                   | Runs `tsc --noEmit` + `npm test` at session end                            |
+| Hook | Trigger | What it does |
+| --- | --- | --- |
+| `protect-generated.js` | PreToolUse Write/Edit | Blocks edits to auto-generated `types.ts`; warns before editing migrations |
+| `format.js` | PostToolUse Write/Edit | Runs ESLint `--fix` + Prettier on every saved file |
+| `post-write-checks.js` | PostToolUse Write/Edit | Flags `as any`, `window.confirm()`, silent `.catch`, inline `style={{}}`, Supabase in pages/, admin layout constants, hardcoded secrets; notes related importers |
+| `stop-check.js` | Stop | Runs `tsc --noEmit` + `npm test` at session end; silent on pass |
 
 ## Project-local skills
 
