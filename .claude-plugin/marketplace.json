@@ -1,9 +1,16 @@
 {
-  "name": "RAM Companies",
+  "name": "ram-companies",
+  "owner": {
+    "name": "RAM Companies"
+  },
   "plugins": [
     {
       "name": "ram-claude-plugin",
-      "description": "Shared skills and hooks for RAM React/Supabase/Vercel projects"
+      "description": "Shared skills and hooks for RAM React/Supabase/Vercel projects",
+      "source": {
+        "source": "github",
+        "repo": "RAM-Companies/ram-claude-plugin"
+      }
     }
   ]
 }
