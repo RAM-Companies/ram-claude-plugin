@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node hooks/protect-generated.js",
+            "command": "powershell -NoProfile -Command \"node (Get-Item $env:USERPROFILE\\.claude\\plugins\\cache\\ram-companies\\ram\\*\\hooks\\protect-generated.js)[0].FullName\"",
             "timeout": 10
           }
         ]
@@ -18,13 +18,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node hooks/format.js",
+            "command": "powershell -NoProfile -Command \"node (Get-Item $env:USERPROFILE\\.claude\\plugins\\cache\\ram-companies\\ram\\*\\hooks\\format.js)[0].FullName\"",
             "timeout": 30,
             "statusMessage": "Linting and formatting..."
           },
           {
             "type": "command",
-            "command": "node hooks/post-write-checks.js",
+            "command": "powershell -NoProfile -Command \"node (Get-Item $env:USERPROFILE\\.claude\\plugins\\cache\\ram-companies\\ram\\*\\hooks\\post-write-checks.js)[0].FullName\"",
             "timeout": 10
           }
         ]
@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node hooks/stop-check.js",
+            "command": "powershell -NoProfile -Command \"node (Get-Item $env:USERPROFILE\\.claude\\plugins\\cache\\ram-companies\\ram\\*\\hooks\\stop-check.js)[0].FullName\"",
             "timeout": 120,
             "statusMessage": "Running type-check and tests..."
           }
