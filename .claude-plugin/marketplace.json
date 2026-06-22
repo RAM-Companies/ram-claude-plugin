@@ -1,5 +1,6 @@
 {
   "name": "ram-companies",
+  "description": "Shared Claude Code skills and hooks for RAM React/TypeScript/Supabase/Vercel projects",
   "owner": {
     "name": "RAM Companies"
   },
