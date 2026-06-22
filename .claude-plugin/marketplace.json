@@ -1,0 +1,9 @@
+{
+  "name": "RAM Companies",
+  "plugins": [
+    {
+      "name": "ram-claude-plugin",
+      "description": "Shared skills and hooks for RAM React/Supabase/Vercel projects"
+    }
+  ]
+}
