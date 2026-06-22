@@ -4,14 +4,20 @@ Shared Claude Code skills and hooks for RAM React / TypeScript / Supabase / Verc
 
 ## Install
 
-Add to `.claude/settings.json` in any RAM project:
+```bash
+claude add marketplace RAM-Companies/ram-claude-plugin
+```
 
-```json
-{
-  "enabledPlugins": {
-    "ram-claude-plugin@RAM-Companies": true
-  }
-}
+Then install the plugin from the marketplace:
+
+```bash
+claude plugin install ram-companies/ram
+```
+
+## Update
+
+```bash
+claude marketplace update ram-companies
 ```
 
 ## Skills

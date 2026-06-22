@@ -5,7 +5,7 @@
   },
   "plugins": [
     {
-      "name": "ram-claude-plugin",
+      "name": "ram",
       "description": "Shared skills and hooks for RAM React/Supabase/Vercel projects",
       "source": {
         "source": "github",
