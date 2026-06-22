@@ -1,0 +1,46 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node hooks/protect-generated.js",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node hooks/format.js",
+            "timeout": 30,
+            "statusMessage": "Linting and formatting..."
+          },
+          {
+            "type": "command",
+            "command": "node hooks/post-write-checks.js",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node hooks/stop-check.js",
+            "timeout": 120,
+            "statusMessage": "Running type-check and tests..."
+          }
+        ]
+      }
+    ]
+  }
+}
