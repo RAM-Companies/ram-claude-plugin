@@ -1,6 +1,6 @@
 // Stop hook: run tsc + tests after every session, surface failures to the user
-import { spawnSync } from "child_process";
-import fs from "fs";
+const { spawnSync } = require("child_process");
+const fs = require("fs");
 
 try {
   fs.readFileSync(0, "utf8");

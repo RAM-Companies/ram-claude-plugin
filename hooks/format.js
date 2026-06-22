@@ -1,7 +1,7 @@
 // PostToolUse: eslint --fix + prettier --write on every Write/Edit
-import { spawnSync } from "child_process";
-import fs from "fs";
-import path from "path";
+const { spawnSync } = require("child_process");
+const fs = require("fs");
+const path = require("path");
 
 const d = JSON.parse(fs.readFileSync(0, "utf8"));
 const f = d?.tool_input?.file_path;

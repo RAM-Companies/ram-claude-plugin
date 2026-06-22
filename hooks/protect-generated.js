@@ -1,6 +1,6 @@
 // PreToolUse: block edits to auto-generated types.ts, warn on migration files
-import fs from "fs";
-import path from "path";
+const fs = require("fs");
+const path = require("path");
 
 const d = JSON.parse(fs.readFileSync(0, "utf8"));
 const f = d?.tool_input?.file_path;
