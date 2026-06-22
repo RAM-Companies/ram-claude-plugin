@@ -386,6 +386,69 @@ These are caught by `claude plugin validate` or by reading the official docs:
 
 ---
 
+## Git workflow conventions
+
+Reference: [Conventional Commits spec](https://www.conventionalcommits.org/en/v1.0.0/)
+
+RAM projects use the `/ram:git-workflow` skill to enforce these rules. The official `commit-commands` plugin (from the Anthropic marketplace) provides generic git scaffolding, but does not know RAM's branch naming, base branch (`dev`), or scope taxonomy — so the RAM skill is the authoritative source.
+
+Install the companion plugin for generic git scaffolding (optional, user scope):
+
+```bash
+claude plugin install commit-commands@claude-plugins-official
+```
+
+### Branch naming
+
+Pattern: `<type>/<short-description>` — lowercase, hyphen-separated, ≤5 words.
+
+Valid types: `feat`, `fix`, `chore`, `refactor`, `docs`, `test`, `perf`.
+
+Always branch from `dev`, not `main`:
+
+```bash
+git checkout dev && git pull origin dev
+git checkout -b feat/your-feature-name
+```
+
+`main` is the production branch. Feature branches must target `dev`. PRs against `main` are for release merges only.
+
+### Conventional commit format
+
+```text
+<type>(<scope>): <description>
+```
+
+- **Type**: same values as branch types
+- **Scope**: `db`, `auth`, `ui`, `api`, `admin`, `hooks`, `skills` — or omit for cross-cutting changes
+- **Description**: imperative, lowercase, ≤72 chars, no trailing period
+
+Examples:
+
+```text
+feat(db): add status column to quotes table
+fix(api): handle null profile in notification service
+chore(ui): upgrade shadcn/ui button component
+refactor(admin): extract invoice list into service layer
+```
+
+Breaking changes — add `!` and a footer:
+
+```text
+feat(db)!: rename quotes table to proposals
+
+BREAKING CHANGE: all references to `quotes` must be updated to `proposals`
+```
+
+### PR rules
+
+- Title follows the same conventional commit format as the first commit on the branch
+- Target branch is always `dev`
+- Include migration steps if there is a DB change; include a screenshot or Loom if there is a UI change
+- Do not self-merge without review (exception: `chore`/`docs` branches)
+
+---
+
 ## Adding a new skill checklist
 
 - [ ] Create `skills/<name>/SKILL.md`

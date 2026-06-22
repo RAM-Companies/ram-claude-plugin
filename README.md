@@ -24,17 +24,18 @@ claude plugin marketplace update ram-companies
 
 ## Skills
 
-| Skill               | Invoke                   | Purpose                                                            |
-| ------------------- | ------------------------ | ------------------------------------------------------------------ |
-| `add-migration`     | `/ram:add-migration`     | Create a Supabase migration (DDL + pgTAP tests + type regen)       |
-| `deno-tests`        | `/ram:deno-tests`        | Add unit tests to a Supabase Edge Function                         |
-| `extract-component` | `/ram:extract-component` | Pull a section out of a large file into a standalone component     |
-| `extract-service`   | `/ram:extract-service`   | Move inline Supabase queries into a service layer                  |
-| `find-usages`       | `/ram:find-usages`       | Find every file that uses a component, function, or class string   |
-| `new-feature`       | `/ram:new-feature`       | Scaffold a new feature folder following feature-based architecture |
-| `pr-review`         | `/ram:pr-review`         | Full PR review: conventions, security, code quality, docs accuracy |
-| `ui-update`         | `/ram:ui-update`         | Safely apply a UI change everywhere it appears across the repo     |
-| `unit-tests`        | `/ram:unit-tests`        | Write Vitest unit tests for pure functions in src/                 |
+| Skill               | Invoke                   | Purpose                                                                           |
+| ------------------- | ------------------------ | --------------------------------------------------------------------------------- |
+| `add-migration`     | `/ram:add-migration`     | Create a Supabase migration (DDL + pgTAP tests + type regen)                      |
+| `deno-tests`        | `/ram:deno-tests`        | Add unit tests to a Supabase Edge Function                                        |
+| `extract-component` | `/ram:extract-component` | Pull a section out of a large file into a standalone component                    |
+| `extract-service`   | `/ram:extract-service`   | Move inline Supabase queries into a service layer                                 |
+| `find-usages`       | `/ram:find-usages`       | Find every file that uses a component, function, or class string                  |
+| `git-workflow`      | `/ram:git-workflow`      | Create a feature branch, write a conventional commit, and open a PR against `dev` |
+| `new-feature`       | `/ram:new-feature`       | Scaffold a new feature folder following feature-based architecture                |
+| `pr-review`         | `/ram:pr-review`         | Full PR review: conventions, security, code quality, docs accuracy                |
+| `ui-update`         | `/ram:ui-update`         | Safely apply a UI change everywhere it appears across the repo                    |
+| `unit-tests`        | `/ram:unit-tests`        | Write Vitest unit tests for pure functions in src/                                |
 
 ## Hooks
 
