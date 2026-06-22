@@ -49,8 +49,8 @@ These rules apply to every PR.
 
 **Git hygiene**
 
-- Commit messages must follow Conventional Commits: `type(scope): message` — valid types are `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `style`, `perf`
-- Branch must be prefixed with `feature/`, `fix/`, `test/`, `chore/`, or `docs/` — never commit directly to `main` or `dev`
+- Commit messages must follow Conventional Commits: `type(scope): message` — valid types are `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `perf`
+- Branch must be prefixed with `feat/`, `fix/`, `chore/`, `refactor/`, `docs/`, `test/`, or `perf/` — never commit directly to `main` or `dev`
 
 ---
 
