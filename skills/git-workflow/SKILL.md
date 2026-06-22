@@ -116,7 +116,7 @@ BREAKING CHANGE: all references to `quotes` must be updated to `proposals`
 1. **Show the diff** so nothing unexpected is staged:
 
    ```bash
-   git diff --stat
+   git diff --staged --stat
    git status
    ```
 
