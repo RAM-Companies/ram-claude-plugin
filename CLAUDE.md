@@ -318,12 +318,12 @@ This runs the same checks the community marketplace review pipeline uses. Fix al
 Reference: [Version management](https://code.claude.com/docs/en/plugins-reference#version-management)
 
 - The `version` field in `plugin.json` controls when users receive updates.
-- Bump `version` in `plugin.json` for every release that should push to existing installs.
+- **Bump once, on the PR that introduces the change** — not on every commit during review, and not separately after merge. The version bump and the feature land together.
 - Follow semver: `MAJOR.MINOR.PATCH`.
   - **PATCH**: bug fixes in hooks or skill wording
   - **MINOR**: new skill or new hook
   - **MAJOR**: breaking change (renamed skill, changed hook behavior that affects projects)
-- Do not bump version for changes to `README.md`, `CLAUDE.md`, or `.gitattributes` only.
+- Do not bump version for changes to `README.md`, `CLAUDE.md`, or `.gitattributes` only — those don't affect plugin behavior and don't need a release.
 - After bumping version, update the `marketplace.json` if needed (it doesn't carry a version — it points to the repo).
 
 ---
