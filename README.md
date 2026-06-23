@@ -34,6 +34,7 @@ claude plugin marketplace update ram-companies
 | `git-workflow`      | `/ram:git-workflow`      | Create a feature branch, write a conventional commit, and open a PR against `dev` |
 | `new-feature`       | `/ram:new-feature`       | Scaffold a new feature folder following feature-based architecture                |
 | `pr-review`         | `/ram:pr-review`         | Full PR review: conventions, security, code quality, docs accuracy                |
+| `setup-env-local`   | `/ram:setup-env-local`   | Write VITE_SUPABASE_ANON_KEY to .env.local for local Supabase development         |
 | `ui-update`         | `/ram:ui-update`         | Safely apply a UI change everywhere it appears across the repo                    |
 | `unit-tests`        | `/ram:unit-tests`        | Write Vitest unit tests for pure functions in src/                                |
 
