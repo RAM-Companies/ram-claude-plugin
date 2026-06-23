@@ -1,7 +1,7 @@
 {
   "name": "ram",
   "description": "Shared skills and hooks for RAM React/Supabase/Vercel projects",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "repository": "https://github.com/RAM-Companies/ram-claude-plugin",
   "skills": "./skills/",
   "hooks": "./hooks/hooks.json"
