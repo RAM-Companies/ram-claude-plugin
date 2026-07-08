@@ -1,0 +1,184 @@
+# Setup Formatting
+
+Set up Prettier, ESLint auto-fix, EditorConfig, and VS Code format-on-save for this project. Perform each step below in order.
+
+## 1. Ensure an ESLint config file exists
+
+Check for a flat config (`eslint.config.js`/`.mjs`/`.cjs`/`.ts`) or a legacy config (`.eslintrc.*`, or an `eslintConfig` key in `package.json`). If one already exists, leave it as-is and move to step 2.
+
+If none exists, create a flat config baseline appropriate to the project:
+
+- **Next.js project** (`next` listed in `package.json` dependencies): run `npm install --save-dev eslint eslint-config-next` if either is missing, then create `eslint.config.mjs`:
+
+  ```js
+  import { defineConfig } from "eslint/config";
+  import nextVitals from "eslint-config-next/core-web-vitals";
+  import nextTs from "eslint-config-next/typescript";
+
+  export default defineConfig([...nextVitals, ...nextTs]);
+  ```
+
+  (Drop the `nextTs` import/spread if the project has no `tsconfig.json`.)
+
+- **Any other Node/TS project**: run `npm install --save-dev eslint @eslint/js` (add `typescript-eslint` too if a `tsconfig.json` is present), then create `eslint.config.mjs`:
+
+  ```js
+  import js from "@eslint/js";
+  import { defineConfig } from "eslint/config";
+
+  export default defineConfig([js.configs.recommended]);
+  ```
+
+  Add `import tseslint from "typescript-eslint";` and spread `...tseslint.configs.recommended` into the array if TypeScript is present.
+
+Verify with `npx eslint .` before continuing — it should run (even if it reports 0 files linted because the repo has no source yet) without an "Oops! Something went wrong!" crash.
+
+## 2. Install ESLint and any plugins its config references
+
+Read `package.json`. If `eslint` is not already a devDependency, run `npm install --save-dev eslint` (and `eslint-config-next` if this is a Next.js project without it).
+
+Read the config file confirmed/created in step 1 and cross-check every plugin it _uses_ against what's actually installed:
+
+- For each rule id with a namespace prefix (e.g. `"stylistic/brace-style"`), confirm that namespace is registered — either via a `plugins: { <namespace>: ... }` entry in the same config object, or provided transitively by an extended config (e.g. `eslint-config-next`).
+- A namespace referenced in a rule but never registered means the corresponding package (e.g. `stylistic` → `@stylistic/eslint-plugin`) was never installed. Install it with `npm install --save-dev <package>`, import it, and add it to the config's `plugins` map.
+
+Verify by running `npx eslint .` — if it prints "Oops! Something went wrong!" with "could not find plugin", a plugin is still missing or unregistered. Do not proceed until this passes (even if it reports real lint errors — those are fine, a crash is not).
+
+## 3. Add `lint` script to `package.json`
+
+Read `package.json`. If a `lint` script is not already present in `scripts`, add:
+
+```json
+"lint": "eslint"
+```
+
+## 4. Install prettier
+
+Run `npm install --save-dev prettier` to add prettier to devDependencies.
+
+## 5. Create `.prettierrc`
+
+Create `.prettierrc` in the project root if it does not already exist:
+
+```json
+{
+  "printWidth": 100,
+  "trailingComma": "none"
+}
+```
+
+If it already exists, read it and report its current contents without overwriting.
+
+## 6. Add `format` script to `package.json`
+
+Read `package.json`. If a `format` script is not already present in `scripts`, add:
+
+```json
+"format": "prettier --write ."
+```
+
+## 7. Create `.vscode/settings.json`
+
+Create `.vscode/settings.json` if it does not exist:
+
+```json
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.useFlatConfig": true
+}
+```
+
+If it already exists, read it and merge in those keys without removing any existing keys.
+
+Also create `.vscode/extensions.json` (or merge into it) recommending `dbaeumer.vscode-eslint` and `esbenp.prettier-vscode` — without the ESLint extension installed, `editor.codeActionsOnSave` has nothing to trigger and saves will silently only run Prettier.
+
+## 8. Add Claude Code post-edit hook
+
+Read `.claude/settings.json` (create it if missing). Merge in a `PostToolUse` hook on matcher `Write|Edit` that runs prettier then eslint after every file edit.
+
+Detect the OS you're running on (e.g. check the platform the current shell/tools report, or ask if genuinely ambiguous) and use the matching variant below — do not default to Windows.
+
+**Windows** — `shell: "powershell"`:
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "$j = [Console]::In.ReadToEnd() | ConvertFrom-Json; $f = $j.tool_input.file_path; if ($f) { npx prettier --write --ignore-unknown $f 2>$null; npx eslint --fix $f 2>$null; if ($LASTEXITCODE -eq 2) { Write-Output 'ESLint config is broken (fatal error, exit 2) - run npx eslint manually to see the crash'; exit 1 } }; exit 0",
+            "timeout": 30,
+            "statusMessage": "Formatting and linting..."
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**macOS / Linux** — `shell: "bash"`:
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "f=$(node -e \"let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{const j=JSON.parse(d);process.stdout.write((j.tool_input&&j.tool_input.file_path)||'')}catch(e){}})\"); if [ -n \"$f\" ]; then npx prettier --write --ignore-unknown \"$f\" 2>/dev/null; npx eslint --fix \"$f\" 2>/dev/null; code=$?; if [ \"$code\" -eq 2 ]; then echo 'ESLint config is broken (fatal error, exit 2) - run npx eslint manually to see the crash'; exit 1; fi; fi; exit 0",
+            "timeout": 30,
+            "statusMessage": "Formatting and linting..."
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+The bash variant reads stdin JSON via `node -e` (not `jq`) since Node is already a guaranteed dependency of this project but `jq` isn't. Both variants use single-quoted JS/PowerShell string literals internally, so neither script itself needs raw double quotes inside its JS/PowerShell body beyond the ones already shown — don't restructure the quoting without re-verifying it still round-trips through JSON.
+
+ESLint exits `1` for ordinary lint findings (expected, non-blocking — keep swallowing these) but exits `2` for fatal errors like a missing/misconfigured plugin. Don't swallow exit `2` silently — surface it, otherwise a broken ESLint config becomes permanently invisible to every future edit.
+
+If a `PostToolUse` / `Write|Edit` hook already exists, show the existing command and ask whether to replace it or leave it.
+
+## 9. Create `.editorconfig`
+
+Create `.editorconfig` in the project root if it does not already exist:
+
+```ini
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.md]
+trim_trailing_whitespace = false
+```
+
+If it already exists, read it and report its current contents without overwriting.
+
+## 10. Format and lint the repo
+
+Run `npm run format` (Prettier) and `npx eslint --fix .` (ESLint) to apply both configs across all existing files. Running only Prettier here would leave pre-existing files in violation of any newly-added lint rules until each one happens to be touched later.
+
+## 11. Verify
+
+Run `npx tsc --noEmit` and `npx eslint` to confirm no errors were introduced by formatting. If `npx eslint` prints "Oops! Something went wrong!" instead of lint results, the config itself is broken (e.g. a rule references a plugin that was never installed/registered) — fix that before treating the setup as complete.
