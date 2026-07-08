@@ -55,5 +55,7 @@ if (test.signal) {
 }
 
 if (failed) {
-  process.stdout.write(JSON.stringify({ systemMessage: parts.join("\n\n") }));
+  process.stdout.write(
+    JSON.stringify({ decision: "block", reason: parts.join("\n\n") }),
+  );
 }
