@@ -186,6 +186,7 @@ test("flags hardcoded status badge colors", () => {
 test("flags a hardcoded JWT-looking string", () => {
   const dir = tmp();
   const file = path.join(dir, "config.ts");
+// pragma: allowlist secret
   const content = `const key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9abcdefghij";\n`;
   try {
     fs.writeFileSync(file, content);
