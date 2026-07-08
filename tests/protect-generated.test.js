@@ -24,23 +24,20 @@ test("tool_input missing entirely -> silent pass-through", () => {
 test("editing auto-generated supabase types.ts is denied", () => {
   const r = run({
     tool_name: "Edit",
-    tool_input: { file_path: "src/integrations/supabase/types.ts" },
+    tool_input: { file_path: "src/integrations/supabase/types.ts" }
   });
   assert.equal(r.status, 0);
   const out = JSON.parse(r.stdout);
   assert.equal(out.hookSpecificOutput.permissionDecision, "deny", r.stdout);
-  assert.match(
-    out.hookSpecificOutput.permissionDecisionReason,
-    /auto-generated/,
-  );
+  assert.match(out.hookSpecificOutput.permissionDecisionReason, /auto-generated/);
 });
 
 test("types.ts deny also matches Windows-style backslash paths", () => {
   const r = run({
     tool_name: "Write",
     tool_input: {
-      file_path: "C:\\project\\src\\integrations\\supabase\\types.ts",
-    },
+      file_path: "C:\\project\\src\\integrations\\supabase\\types.ts"
+    }
   });
   const out = JSON.parse(r.stdout);
   assert.equal(out.hookSpecificOutput.permissionDecision, "deny");
@@ -56,14 +53,11 @@ test("editing an existing migration file asks for confirmation", () => {
   try {
     const r = run({
       tool_name: "Edit",
-      tool_input: { file_path: migrationFile },
+      tool_input: { file_path: migrationFile }
     });
     const out = JSON.parse(r.stdout);
     assert.equal(out.hookSpecificOutput.permissionDecision, "ask");
-    assert.match(
-      out.hookSpecificOutput.permissionDecisionReason,
-      /already be applied/,
-    );
+    assert.match(out.hookSpecificOutput.permissionDecisionReason, /already be applied/);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
@@ -71,16 +65,11 @@ test("editing an existing migration file asks for confirmation", () => {
 
 test("a new (not-yet-created) migration file is not warned about", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "ram-hook-test-"));
-  const migrationFile = path.join(
-    dir,
-    "supabase",
-    "migrations",
-    "20260101000001_new.sql",
-  );
+  const migrationFile = path.join(dir, "supabase", "migrations", "20260101000001_new.sql");
   try {
     const r = run({
       tool_name: "Write",
-      tool_input: { file_path: migrationFile, content: "select 1;" },
+      tool_input: { file_path: migrationFile, content: "select 1;" }
     });
     assert.equal(r.status, 0);
     assert.equal(r.stdout, "");
@@ -92,7 +81,7 @@ test("a new (not-yet-created) migration file is not warned about", () => {
 test("a non-migration, non-generated file passes through silently", () => {
   const r = run({
     tool_name: "Edit",
-    tool_input: { file_path: "src/components/Button.tsx" },
+    tool_input: { file_path: "src/components/Button.tsx" }
   });
   assert.equal(r.status, 0);
   assert.equal(r.stdout, "");

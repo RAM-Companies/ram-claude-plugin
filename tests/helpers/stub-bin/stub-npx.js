@@ -11,20 +11,20 @@ const cfg = {
     status: envInt("STUB_ESLINT_STATUS", 0),
     stdout: process.env.STUB_ESLINT_STDOUT || "",
     stderr: process.env.STUB_ESLINT_STDERR || "",
-    sleepMs: envInt("STUB_ESLINT_SLEEP_MS", 0),
+    sleepMs: envInt("STUB_ESLINT_SLEEP_MS", 0)
   },
   prettier: {
     status: envInt("STUB_PRETTIER_STATUS", 0),
     stdout: process.env.STUB_PRETTIER_STDOUT || "",
     stderr: process.env.STUB_PRETTIER_STDERR || "",
-    sleepMs: envInt("STUB_PRETTIER_SLEEP_MS", 0),
+    sleepMs: envInt("STUB_PRETTIER_SLEEP_MS", 0)
   },
   tsc: {
     status: envInt("STUB_TSC_STATUS", 0),
     stdout: process.env.STUB_TSC_STDOUT || "",
     stderr: process.env.STUB_TSC_STDERR || "",
-    sleepMs: envInt("STUB_TSC_SLEEP_MS", 0),
-  },
+    sleepMs: envInt("STUB_TSC_SLEEP_MS", 0)
+  }
 };
 
 const c = cfg[tool];

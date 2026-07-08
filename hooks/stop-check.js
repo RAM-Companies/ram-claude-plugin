@@ -25,22 +25,16 @@ try {
       cwd,
       encoding: "utf8",
       shell: true,
-      timeout: HOOK_TIMEOUT_MS,
+      timeout: HOOK_TIMEOUT_MS
     });
     if (tsc.signal) {
       failed = true;
-      parts.push(
-        `TypeScript check timed out (killed by ${tsc.signal}) — result unknown`,
-      );
+      parts.push(`TypeScript check timed out (killed by ${tsc.signal}) — result unknown`);
     } else if (tsc.status === 0) {
       parts.push("TypeScript ✓");
     } else {
       failed = true;
-      const out = (tsc.stdout + tsc.stderr)
-        .trim()
-        .split("\n")
-        .slice(0, 25)
-        .join("\n");
+      const out = (tsc.stdout + tsc.stderr).trim().split("\n").slice(0, 25).join("\n");
       parts.push(`TypeScript errors:\n${out}`);
     }
   }
@@ -50,9 +44,7 @@ try {
   // every session in a project that simply hasn't set up tests yet.
   let hasTestScript = false;
   try {
-    const pkg = JSON.parse(
-      fs.readFileSync(path.join(cwd, "package.json"), "utf8"),
-    );
+    const pkg = JSON.parse(fs.readFileSync(path.join(cwd, "package.json"), "utf8"));
     hasTestScript = Boolean(pkg?.scripts?.test);
   } catch {
     hasTestScript = false;
@@ -63,30 +55,22 @@ try {
       cwd,
       encoding: "utf8",
       shell: true,
-      timeout: HOOK_TIMEOUT_MS,
+      timeout: HOOK_TIMEOUT_MS
     });
     if (test.signal) {
       failed = true;
-      parts.push(
-        `Tests timed out (killed by ${test.signal}) — result unknown`,
-      );
+      parts.push(`Tests timed out (killed by ${test.signal}) — result unknown`);
     } else if (test.status === 0) {
       parts.push("Tests ✓");
     } else {
       failed = true;
-      const out = (test.stdout + test.stderr)
-        .trim()
-        .split("\n")
-        .slice(-30)
-        .join("\n");
+      const out = (test.stdout + test.stderr).trim().split("\n").slice(-30).join("\n");
       parts.push(`Test failures:\n${out}`);
     }
   }
 
   if (failed) {
-    process.stdout.write(
-      JSON.stringify({ decision: "block", reason: parts.join("\n\n") }),
-    );
+    process.stdout.write(JSON.stringify({ decision: "block", reason: parts.join("\n\n") }));
   }
 } catch (err) {
   // A crash here would silently let the session stop without ever reporting
@@ -94,7 +78,7 @@ try {
   process.stdout.write(
     JSON.stringify({
       decision: "block",
-      reason: `stop-check.js crashed before it could run tsc/tests: ${err.message}`,
-    }),
+      reason: `stop-check.js crashed before it could run tsc/tests: ${err.message}`
+    })
   );
 }

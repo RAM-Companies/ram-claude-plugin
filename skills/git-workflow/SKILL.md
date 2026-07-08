@@ -15,15 +15,15 @@ All branches must follow this pattern:
 
 Types and when to use them:
 
-| Type | Use for |
-| --- | --- |
-| `feat` | New user-facing feature or capability |
-| `fix` | Bug fix |
-| `chore` | Tooling, deps, config, non-functional changes |
-| `refactor` | Code restructuring with no behavior change |
-| `docs` | Documentation only |
-| `test` | Adding or fixing tests only |
-| `perf` | Performance improvement |
+| Type       | Use for                                       |
+| ---------- | --------------------------------------------- |
+| `feat`     | New user-facing feature or capability         |
+| `fix`      | Bug fix                                       |
+| `chore`    | Tooling, deps, config, non-functional changes |
+| `refactor` | Code restructuring with no behavior change    |
+| `docs`     | Documentation only                            |
+| `test`     | Adding or fixing tests only                   |
+| `perf`     | Performance improvement                       |
 
 The description is lowercase, hyphen-separated, ≤5 words. Examples:
 
@@ -64,15 +64,15 @@ Same values as branch types: `feat`, `fix`, `chore`, `refactor`, `docs`, `test`,
 
 Scope is the area of the codebase affected. Use one of these established scopes, or omit if the change is cross-cutting:
 
-| Scope | Covers |
-| --- | --- |
-| `db` | Supabase migrations, schema, RLS policies |
-| `auth` | Authentication, session handling |
-| `ui` | Shared components, design tokens, styles |
-| `api` | Edge Functions, service layer, Supabase queries |
-| `admin` | Admin panel features |
-| `hooks` | Claude Code plugin hooks |
-| `skills` | Claude Code plugin skills |
+| Scope    | Covers                                          |
+| -------- | ----------------------------------------------- |
+| `db`     | Supabase migrations, schema, RLS policies       |
+| `auth`   | Authentication, session handling                |
+| `ui`     | Shared components, design tokens, styles        |
+| `api`    | Edge Functions, service layer, Supabase queries |
+| `admin`  | Admin panel features                            |
+| `hooks`  | Claude Code plugin hooks                        |
+| `skills` | Claude Code plugin skills                       |
 
 Examples:
 

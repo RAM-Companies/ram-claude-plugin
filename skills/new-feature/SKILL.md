@@ -48,9 +48,7 @@ import type { Database } from "@/integrations/supabase/types";
 type Entity = Database["public"]["Tables"]["<table_name>"]["Row"];
 
 export async function getAll(): Promise<Entity[]> {
-  const { data, error } = await supabase
-    .from("<table_name>")
-    .select("id, name, created_at");
+  const { data, error } = await supabase.from("<table_name>").select("id, name, created_at");
   if (error) throw error;
   return data;
 }

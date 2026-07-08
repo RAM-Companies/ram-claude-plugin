@@ -67,9 +67,11 @@ If the write fails, tell the user: "I couldn't write to `.env.local`. Please ope
 ## Troubleshooting
 
 **Auth errors persist after restarting the dev server:**
+
 > The key is written correctly. Check: (1) did you fully stop and restart the server? (2) is your Supabase project paused? (3) are RLS policies blocking the query? (4) did you copy the anon/public key, not the service_role key?
 
 **`VITE_SUPABASE_ANON_KEY` is undefined at runtime:**
+
 > Ensure `.env.local` is in the same directory as your `vite.config.*` file — Vite only loads env files from the project root. Run `ls -la` in your project root to confirm the file is there.
 
 ## Rules

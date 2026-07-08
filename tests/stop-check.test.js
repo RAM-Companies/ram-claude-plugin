@@ -13,7 +13,7 @@ function withProject(fn) {
   fs.writeFileSync(path.join(dir, "tsconfig.json"), "{}");
   fs.writeFileSync(
     path.join(dir, "package.json"),
-    JSON.stringify({ name: "x", scripts: { test: "echo test" } }),
+    JSON.stringify({ name: "x", scripts: { test: "echo test" } })
   );
   try {
     return fn(dir);
@@ -28,7 +28,7 @@ function withProject(fn) {
       recursive: true,
       force: true,
       maxRetries: 20,
-      retryDelay: 150,
+      retryDelay: 150
     });
   }
 }
@@ -50,11 +50,10 @@ test("tsc failure blocks with the tsc output", () => {
     const r = run(
       {
         STUB_TSC_STATUS: "1",
-        STUB_TSC_STDOUT:
-          "src/foo.ts(1,1): error TS2304: Cannot find name 'x'.",
-        STUB_NPM_TEST_STATUS: "0",
+        STUB_TSC_STDOUT: "src/foo.ts(1,1): error TS2304: Cannot find name 'x'.",
+        STUB_NPM_TEST_STATUS: "0"
       },
-      cwd,
+      cwd
     );
     const out = JSON.parse(r.stdout);
     assert.equal(out.decision, "block");
@@ -69,9 +68,9 @@ test("test failure blocks with the test output", () => {
       {
         STUB_TSC_STATUS: "0",
         STUB_NPM_TEST_STATUS: "1",
-        STUB_NPM_TEST_STDOUT: "1 failing\n  1) foo should bar",
+        STUB_NPM_TEST_STDOUT: "1 failing\n  1) foo should bar"
       },
-      cwd,
+      cwd
     );
     const out = JSON.parse(r.stdout);
     assert.equal(out.decision, "block");
@@ -87,9 +86,9 @@ test("both tsc and tests failing combines both reasons", () => {
         STUB_TSC_STATUS: "1",
         STUB_TSC_STDOUT: "TS error",
         STUB_NPM_TEST_STATUS: "1",
-        STUB_NPM_TEST_STDOUT: "test error",
+        STUB_NPM_TEST_STDOUT: "test error"
       },
-      cwd,
+      cwd
     );
     const out = JSON.parse(r.stdout);
     assert.match(out.reason, /TypeScript errors/);
@@ -110,9 +109,9 @@ test("tsc timing out is reported as a block, not silence", () => {
         STUB_TSC_SLEEP_MS: String(sleepMs),
         STUB_TSC_STATUS: "0",
         STUB_NPM_TEST_STATUS: "0",
-        RAM_HOOK_TIMEOUT_MS: "100",
+        RAM_HOOK_TIMEOUT_MS: "100"
       },
-      cwd,
+      cwd
     );
     const out = JSON.parse(r.stdout);
     assert.equal(out.decision, "block");
@@ -130,7 +129,7 @@ test("no tsconfig.json -> tsc is skipped, not falsely reported", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "ram-hook-test-"));
   fs.writeFileSync(
     path.join(dir, "package.json"),
-    JSON.stringify({ name: "x", scripts: { test: "echo test" } }),
+    JSON.stringify({ name: "x", scripts: { test: "echo test" } })
   );
   try {
     const r = run({ STUB_NPM_TEST_STATUS: "0" }, dir);
@@ -143,10 +142,7 @@ test("no tsconfig.json -> tsc is skipped, not falsely reported", () => {
 test("no test script in package.json -> npm test is skipped, not falsely reported", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "ram-hook-test-"));
   fs.writeFileSync(path.join(dir, "tsconfig.json"), "{}");
-  fs.writeFileSync(
-    path.join(dir, "package.json"),
-    JSON.stringify({ name: "x", scripts: {} }),
-  );
+  fs.writeFileSync(path.join(dir, "package.json"), JSON.stringify({ name: "x", scripts: {} }));
   try {
     const r = run({ STUB_TSC_STATUS: "0" }, dir);
     assert.equal(r.stdout, "");
@@ -163,7 +159,7 @@ test("no package.json at all -> both checks are skipped silently", () => {
 
 test("malformed stdin does not crash the hook", () => {
   const r = runHook("stop-check.js", "{ not json", {
-    env: { STUB_TSC_STATUS: "0", STUB_NPM_TEST_STATUS: "0" },
+    env: { STUB_TSC_STATUS: "0", STUB_NPM_TEST_STATUS: "0" }
   });
   assert.equal(r.status, 0);
   assert.equal(r.stdout, "");

@@ -29,6 +29,18 @@ copilot plugin install ram@ram-companies
 claude plugin marketplace update ram-companies
 ```
 
+## Developing this plugin
+
+To try a skill from this repo before it's released, load it unreleased with:
+
+```bash
+claude --plugin-dir .
+```
+
+then invoke it as `/ram:<skill-name>` and run `/reload-plugins` after edits to pick up changes without restarting.
+
+**This only works from a plain terminal, not the VS Code extension.** The VS Code extension launches its own managed `claude` process and has no setting to pass `--plugin-dir` (or any extra CLI flag) to it. If you're working in the VS Code extension, open a separate integrated or external terminal and run the command above there — it starts an independent CLI session, not the extension's chat panel. Hooks don't have this limitation: `.claude/settings.json` wires this repo's own hooks up directly via `${CLAUDE_PROJECT_DIR}`, so they run in any session (including the VS Code extension) without needing `--plugin-dir`.
+
 ## Skills
 
 | Skill               | Invoke                   | Purpose                                                                           |

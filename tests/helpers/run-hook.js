@@ -14,16 +14,14 @@ const STUB_BIN = path.join(__dirname, "stub-bin");
 function runHook(hookFile, input, opts = {}) {
   const scriptPath = path.join(HOOKS_DIR, hookFile);
   const PATH =
-    opts.path !== undefined
-      ? opts.path
-      : STUB_BIN + path.delimiter + (process.env.PATH || "");
+    opts.path !== undefined ? opts.path : STUB_BIN + path.delimiter + (process.env.PATH || "");
 
   return spawnSync(process.execPath, [scriptPath], {
     input: typeof input === "string" ? input : JSON.stringify(input),
     cwd: opts.cwd || os.tmpdir(),
     env: { ...process.env, ...opts.env, PATH },
     encoding: "utf8",
-    timeout: opts.timeout ?? 10000,
+    timeout: opts.timeout ?? 10000
   });
 }
 
