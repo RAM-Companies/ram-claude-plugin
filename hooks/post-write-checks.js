@@ -2,6 +2,7 @@
 const fs = require("fs");
 const path = require("path");
 
+try {
 const d = JSON.parse(fs.readFileSync(0, "utf8"));
 const f = d?.tool_input?.file_path;
 if (!f) process.exit(0);
@@ -172,4 +173,8 @@ if (issues.length || notes.length) {
       },
     }),
   );
+}
+} catch (err) {
+  process.stderr.write(`post-write-checks.js: skipping — ${err.message}\n`);
+  process.exit(0);
 }
