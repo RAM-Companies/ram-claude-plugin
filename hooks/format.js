@@ -24,14 +24,14 @@ try {
     cwd,
     "node_modules",
     ".bin",
-    process.platform === "win32" ? "eslint.cmd" : "eslint",
+    process.platform === "win32" ? "eslint.cmd" : "eslint"
   );
   if (/\.(ts|tsx|js|jsx|cjs|mjs)$/.test(f) && fs.existsSync(eslintBin)) {
     const eslint = spawnSync("npx", ["eslint", "--fix", f], {
       cwd,
       encoding: "utf8",
       shell: true,
-      stdio: ["ignore", "pipe", "pipe"],
+      stdio: ["ignore", "pipe", "pipe"]
     });
     // Exit 1 = unfixable lint warnings (expected — ESLint ran fine and found issues).
     // Anything else (2 = fatal config/parse error, non-standard codes, null = killed)
@@ -43,21 +43,17 @@ try {
         .slice(0, 10)
         .join("\n");
       messages.push(
-        `ESLint did not run on ${path.basename(f)} (exit ${eslint.status ?? `signal ${eslint.signal}`}) — linting was not applied:\n${detail}`,
+        `ESLint did not run on ${path.basename(f)} (exit ${eslint.status ?? `signal ${eslint.signal}`}) — linting was not applied:\n${detail}`
       );
     }
   }
 
-  const prettier = spawnSync(
-    "npx",
-    ["prettier", "--write", "--ignore-unknown", f],
-    {
-      cwd,
-      encoding: "utf8",
-      shell: true,
-      stdio: ["ignore", "pipe", "pipe"],
-    },
-  );
+  const prettier = spawnSync("npx", ["prettier", "--write", "--ignore-unknown", f], {
+    cwd,
+    encoding: "utf8",
+    shell: true,
+    stdio: ["ignore", "pipe", "pipe"]
+  });
   if (prettier.status !== 0) {
     const detail = ((prettier.stdout || "") + (prettier.stderr || ""))
       .trim()
@@ -65,7 +61,7 @@ try {
       .slice(0, 10)
       .join("\n");
     messages.push(
-      `Prettier error on ${path.basename(f)} (exit ${prettier.status ?? `signal ${prettier.signal}`}) — formatting was not applied:\n${detail}`,
+      `Prettier error on ${path.basename(f)} (exit ${prettier.status ?? `signal ${prettier.signal}`}) — formatting was not applied:\n${detail}`
     );
   }
 
@@ -75,9 +71,9 @@ try {
       JSON.stringify({
         hookSpecificOutput: {
           hookEventName: "PostToolUse",
-          additionalContext: messages.join("\n\n"),
-        },
-      }),
+          additionalContext: messages.join("\n\n")
+        }
+      })
     );
   }
 } catch (err) {

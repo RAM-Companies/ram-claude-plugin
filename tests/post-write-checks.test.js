@@ -24,8 +24,8 @@ test("skips files under .claude/", () => {
     tool_name: "Write",
     tool_input: {
       file_path: "C:/project/.claude/hooks/local.js",
-      content: "const x = y as any;",
-    },
+      content: "const x = y as any;"
+    }
   });
   assert.equal(r.stdout, "");
 });
@@ -35,8 +35,8 @@ test("skips plugin hooks/ files outside src/", () => {
     tool_name: "Write",
     tool_input: {
       file_path: "C:/project/hooks/format.js",
-      content: "const x = y as any;",
-    },
+      content: "const x = y as any;"
+    }
   });
   assert.equal(r.stdout, "");
 });
@@ -48,7 +48,7 @@ test("flags a newly introduced `as any` cast", () => {
     fs.writeFileSync(file, "const x = y as any;\n");
     const r = run({
       tool_name: "Write",
-      tool_input: { file_path: file, content: "const x = y as any;\n" },
+      tool_input: { file_path: file, content: "const x = y as any;\n" }
     });
     const out = JSON.parse(r.stdout);
     assert.match(out.hookSpecificOutput.additionalContext, /as any/);
@@ -68,8 +68,8 @@ test("does not re-flag `as any` that already existed before the edit", () => {
       tool_input: {
         file_path: file,
         old_string: "const x = y as any;",
-        new_string: "const x = y as any;",
-      },
+        new_string: "const x = y as any;"
+      }
     });
     assert.equal(r.stdout, "");
   } finally {
@@ -86,8 +86,8 @@ test("flags window.confirm()", () => {
       tool_name: "Write",
       tool_input: {
         file_path: file,
-        content: "window.confirm('are you sure?');\n",
-      },
+        content: "window.confirm('are you sure?');\n"
+      }
     });
     const out = JSON.parse(r.stdout);
     assert.match(out.hookSpecificOutput.additionalContext, /AlertDialog/);
@@ -104,7 +104,7 @@ test("flags a silent empty catch", () => {
     fs.writeFileSync(file, content);
     const r = run({
       tool_name: "Write",
-      tool_input: { file_path: file, content },
+      tool_input: { file_path: file, content }
     });
     const out = JSON.parse(r.stdout);
     assert.match(out.hookSpecificOutput.additionalContext, /Silent `\.catch/);
@@ -122,13 +122,10 @@ test("flags supabase.from() introduced under pages/", () => {
     fs.writeFileSync(file, content);
     const r = run({
       tool_name: "Write",
-      tool_input: { file_path: file, content },
+      tool_input: { file_path: file, content }
     });
     const out = JSON.parse(r.stdout);
-    assert.match(
-      out.hookSpecificOutput.additionalContext,
-      /supabase\.from\(\)/,
-    );
+    assert.match(out.hookSpecificOutput.additionalContext, /supabase\.from\(\)/);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
@@ -142,7 +139,7 @@ test("flags inline style={{}}", () => {
     fs.writeFileSync(file, content);
     const r = run({
       tool_name: "Write",
-      tool_input: { file_path: file, content },
+      tool_input: { file_path: file, content }
     });
     const out = JSON.parse(r.stdout);
     assert.match(out.hookSpecificOutput.additionalContext, /Tailwind/);
@@ -160,7 +157,7 @@ test("flags hardcoded admin layout classes in features/admin", () => {
     fs.writeFileSync(file, content);
     const r = run({
       tool_name: "Write",
-      tool_input: { file_path: file, content },
+      tool_input: { file_path: file, content }
     });
     const out = JSON.parse(r.stdout);
     assert.match(out.hookSpecificOutput.additionalContext, /AdminFormRow/);
@@ -177,7 +174,7 @@ test("flags hardcoded status badge colors", () => {
     fs.writeFileSync(file, content);
     const r = run({
       tool_name: "Write",
-      tool_input: { file_path: file, content },
+      tool_input: { file_path: file, content }
     });
     const out = JSON.parse(r.stdout);
     assert.match(out.hookSpecificOutput.additionalContext, /STATUS_COLORS/);
@@ -195,7 +192,7 @@ test("flags a hardcoded JWT-looking string", () => {
     fs.writeFileSync(file, content);
     const r = run({
       tool_name: "Write",
-      tool_input: { file_path: file, content },
+      tool_input: { file_path: file, content }
     });
     const out = JSON.parse(r.stdout);
     assert.match(out.hookSpecificOutput.additionalContext, /JWT\/API key/);
@@ -212,7 +209,7 @@ test("flags a hardcoded supabase URL", () => {
     fs.writeFileSync(file, content);
     const r = run({
       tool_name: "Write",
-      tool_input: { file_path: file, content },
+      tool_input: { file_path: file, content }
     });
     const out = JSON.parse(r.stdout);
     assert.match(out.hookSpecificOutput.additionalContext, /Supabase URL/);
@@ -229,7 +226,7 @@ test("does not scan .env files for secrets", () => {
     fs.writeFileSync(file, content);
     const r = run({
       tool_name: "Write",
-      tool_input: { file_path: file, content },
+      tool_input: { file_path: file, content }
     });
     assert.equal(r.stdout, "");
   } finally {
@@ -245,7 +242,7 @@ test("does not flag env-var reads of secrets", () => {
     fs.writeFileSync(file, content);
     const r = run({
       tool_name: "Write",
-      tool_input: { file_path: file, content },
+      tool_input: { file_path: file, content }
     });
     assert.equal(r.stdout, "");
   } finally {
@@ -264,21 +261,15 @@ test("notes other files that import a changed feature file", () => {
     fs.writeFileSync(target, content);
     fs.writeFileSync(
       consumer,
-      `import { OrderCard } from "./OrderCard";\nexport function OrderList() { return null; }\n`,
+      `import { OrderCard } from "./OrderCard";\nexport function OrderList() { return null; }\n`
     );
     const r = run({
       tool_name: "Write",
-      tool_input: { file_path: target, content },
+      tool_input: { file_path: target, content }
     });
     const out = JSON.parse(r.stdout);
-    assert.match(
-      out.hookSpecificOutput.additionalContext,
-      /import OrderCard/,
-    );
-    assert.match(
-      out.hookSpecificOutput.additionalContext,
-      /OrderList\.tsx/,
-    );
+    assert.match(out.hookSpecificOutput.additionalContext, /import OrderCard/);
+    assert.match(out.hookSpecificOutput.additionalContext, /OrderList\.tsx/);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }

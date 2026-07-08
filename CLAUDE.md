@@ -66,14 +66,14 @@ Reference: [Plugin manifest schema](https://code.claude.com/docs/en/plugins-refe
 
 Field rules:
 
-| Field | Rule |
-| --- | --- |
-| `name` | The namespace prefix — skills invoke as `/ram:<skill>`. Keep it short, lowercase, hyphen-only. |
-| `version` | Bump this with every release. Users only get updates when the version field changes. Omitting it causes every commit to count as a new version, triggering reinstalls. Use semver: `MAJOR.MINOR.PATCH`. |
-| `description` | One sentence. Shown in the plugin manager. |
-| `repository` | Full GitHub URL. Required for marketplace distribution. |
-| `skills` | Optional. Points to a custom skill directory; adds to (not replaces) the default `skills/` scan. Our value `"./skills/"` is the default location — redundant but harmless. |
-| `hooks` | Optional. Points to the hooks config file. Our value `"./hooks/hooks.json"` is the default location — redundant but explicit. |
+| Field         | Rule                                                                                                                                                                                                    |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`        | The namespace prefix — skills invoke as `/ram:<skill>`. Keep it short, lowercase, hyphen-only.                                                                                                          |
+| `version`     | Bump this with every release. Users only get updates when the version field changes. Omitting it causes every commit to count as a new version, triggering reinstalls. Use semver: `MAJOR.MINOR.PATCH`. |
+| `description` | One sentence. Shown in the plugin manager.                                                                                                                                                              |
+| `repository`  | Full GitHub URL. Required for marketplace distribution.                                                                                                                                                 |
+| `skills`      | Optional. Points to a custom skill directory; adds to (not replaces) the default `skills/` scan. Our value `"./skills/"` is the default location — redundant but harmless.                              |
+| `hooks`       | Optional. Points to the hooks config file. Our value `"./hooks/hooks.json"` is the default location — redundant but explicit.                                                                           |
 
 Claude Code ignores unrecognized fields and reports extra fields as warnings (not errors) from `claude plugin validate`. Known component path fields (`skills`, `hooks`, `agents`, `mcpServers`, etc.) are all valid per the official schema.
 
@@ -98,9 +98,9 @@ skills/
 
 ```yaml
 ---
-name: my-skill                  # Optional — overrides directory name
-description: One sentence.      # Required — controls when Claude auto-invokes this skill
-disable-model-invocation: true  # Optional — makes skill user-only (no auto-invocation)
+name: my-skill # Optional — overrides directory name
+description: One sentence. # Required — controls when Claude auto-invokes this skill
+disable-model-invocation: true # Optional — makes skill user-only (no auto-invocation)
 ---
 ```
 
@@ -190,20 +190,20 @@ This resolves to the plugin's installation directory at runtime. Do not hardcode
 
 `.claude/settings.json` exists solely so this repo dogfoods its own hooks while you develop them — it's never shipped to or read by consumer projects (they only get `hooks/hooks.json`, via `plugin.json`'s `hooks` field). The two files must stay structurally identical: same events, same matchers, same script list, same order, same `timeout`/`statusMessage` — the **only** difference is the path variable in `args`:
 
-| File | Path variable |
-| --- | --- |
-| `hooks/hooks.json` | `${CLAUDE_PLUGIN_ROOT}/hooks/<script>.js` |
+| File                    | Path variable                             |
+| ----------------------- | ----------------------------------------- |
+| `hooks/hooks.json`      | `${CLAUDE_PLUGIN_ROOT}/hooks/<script>.js` |
 | `.claude/settings.json` | `${CLAUDE_PROJECT_DIR}/hooks/<script>.js` |
 
 Whenever you add, remove, or change a hook entry in `hooks/hooks.json` (new script, changed matcher, changed timeout), make the identical edit in `.claude/settings.json`, swapping only the path variable. Nothing enforces this automatically — `claude plugin validate` only checks `hooks/hooks.json` — so treat it as one logical change across two files, not two separate edits. If the files drift, this repo silently stops dogfooding whatever changed.
 
 ### Exit codes — the contract
 
-| Exit code | Meaning | Effect |
-| --- | --- | --- |
-| `0` | Success | Parse stdout for optional JSON control output |
-| `2` | Blocking error | Prevent the action; send stderr to Claude as the reason |
-| Anything else | Non-blocking error | Log the error, continue normally |
+| Exit code     | Meaning            | Effect                                                  |
+| ------------- | ------------------ | ------------------------------------------------------- |
+| `0`           | Success            | Parse stdout for optional JSON control output           |
+| `2`           | Blocking error     | Prevent the action; send stderr to Claude as the reason |
+| Anything else | Non-blocking error | Log the error, continue normally                        |
 
 Exit 2 is the correct code to block a tool call. Never exit 1 to block — that's a non-blocking error that logs and continues.
 
@@ -245,11 +245,11 @@ For `PreToolUse`, set `permissionDecision` to `"allow"`, `"deny"`, or `"ask"`. F
 
 The `matcher` field controls which tool events fire the hook:
 
-| Syntax | How it's evaluated |
-| --- | --- |
-| `"Write\|Edit"` | Exact string match on tool name — fires on Write OR Edit |
-| Any string with non-word characters | JavaScript regex |
-| `"*"` or omitted | Fires on all tools |
+| Syntax                              | How it's evaluated                                       |
+| ----------------------------------- | -------------------------------------------------------- |
+| `"Write\|Edit"`                     | Exact string match on tool name — fires on Write OR Edit |
+| Any string with non-word characters | JavaScript regex                                         |
+| `"*"` or omitted                    | Fires on all tools                                       |
 
 `"Write|Edit"` uses exact match — the `|` is the OR operator for the plain-string syntax, not regex. Use `"Write\|Edit\|Bash"` to add more tools. To match MCP tools, use regex: `"mcp__memory__.*"`.
 
@@ -277,13 +277,13 @@ Respectively: `protect-generated.js` (fast path check), `format.js` (ESLint + Pr
 
 ### Hook events reference
 
-| Event | When | Blockable |
-| --- | --- | --- |
-| `PreToolUse` | Before a tool executes | Yes (exit 2 or `permissionDecision: "deny"`) |
-| `PostToolUse` | After a tool succeeds | Yes (`"decision": "block"`) |
-| `Stop` | After Claude finishes responding | Yes (prevents stopping) |
-| `SessionStart` | New or resumed session | No |
-| `UserPromptSubmit` | User submits a message | Yes (exit 2 rejects the prompt) |
+| Event              | When                             | Blockable                                    |
+| ------------------ | -------------------------------- | -------------------------------------------- |
+| `PreToolUse`       | Before a tool executes           | Yes (exit 2 or `permissionDecision: "deny"`) |
+| `PostToolUse`      | After a tool succeeds            | Yes (`"decision": "block"`)                  |
+| `Stop`             | After Claude finishes responding | Yes (prevents stopping)                      |
+| `SessionStart`     | New or resumed session           | No                                           |
+| `UserPromptSubmit` | User submits a message           | Yes (exit 2 rejects the prompt)              |
 
 Adding a new hook event? Check the [full event list](https://code.claude.com/docs/en/hooks#hook-events) first — there are 20+ events.
 
@@ -397,18 +397,18 @@ Rules:
 
 These are caught by `claude plugin validate` or by reading the official docs:
 
-| Mistake | Correct approach |
-| --- | --- |
-| Putting `skills/` inside `.claude-plugin/` | `skills/` goes at the plugin root |
-| Hardcoding `~/.claude/plugins/cache/...` paths in hooks | Use `${CLAUDE_PLUGIN_ROOT}/hooks/my-hook.js` in `args` |
-| Using PowerShell glob to find hook scripts | Use exec form with `${CLAUDE_PLUGIN_ROOT}` |
-| Exit 1 to block a tool | Exit 2 to block; exit 1 is a non-blocking error |
-| `console.log()` in hooks | `process.stderr.write()` for messages, JSON to stdout for structured output |
-| Skill `description` that names the skill instead of the use-case | Write a sentence describing when to use it |
-| Not bumping `version` after a change | Bump version for every release |
-| Committing secrets in hook scripts or skill bodies | Use env vars; hooks receive `cwd` — read project `.env` at runtime if needed |
-| Editing `supabase/migrations/*.sql` files | Create a new migration — never edit existing ones |
-| Install syntax `ram-companies/ram` | Correct syntax is `ram@ram-companies` (`<plugin>@<marketplace>`) |
+| Mistake                                                          | Correct approach                                                             |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Putting `skills/` inside `.claude-plugin/`                       | `skills/` goes at the plugin root                                            |
+| Hardcoding `~/.claude/plugins/cache/...` paths in hooks          | Use `${CLAUDE_PLUGIN_ROOT}/hooks/my-hook.js` in `args`                       |
+| Using PowerShell glob to find hook scripts                       | Use exec form with `${CLAUDE_PLUGIN_ROOT}`                                   |
+| Exit 1 to block a tool                                           | Exit 2 to block; exit 1 is a non-blocking error                              |
+| `console.log()` in hooks                                         | `process.stderr.write()` for messages, JSON to stdout for structured output  |
+| Skill `description` that names the skill instead of the use-case | Write a sentence describing when to use it                                   |
+| Not bumping `version` after a change                             | Bump version for every release                                               |
+| Committing secrets in hook scripts or skill bodies               | Use env vars; hooks receive `cwd` — read project `.env` at runtime if needed |
+| Editing `supabase/migrations/*.sql` files                        | Create a new migration — never edit existing ones                            |
+| Install syntax `ram-companies/ram`                               | Correct syntax is `ram@ram-companies` (`<plugin>@<marketplace>`)             |
 
 ---
 
