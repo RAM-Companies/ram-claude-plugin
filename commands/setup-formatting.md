@@ -8,14 +8,14 @@ Check for a flat config (`eslint.config.js`/`.mjs`/`.cjs`/`.ts`) or a legacy con
 
 If none exists, create a flat config baseline appropriate to the project:
 
-- **Next.js project** (`next` listed in `package.json` dependencies): run `npm install --save-dev eslint eslint-config-next` if either is missing, then create `eslint.config.mjs`:
+- **Next.js project** (`next` listed in `package.json` dependencies): run `npm install --save-dev eslint @next/eslint-plugin-next` if either is missing, then create `eslint.config.mjs`:
 
   ```js
-  import { defineConfig } from "eslint/config";
-  import nextVitals from "eslint-config-next/core-web-vitals";
-  import nextTs from "eslint-config-next/typescript";
+  import next from "@next/eslint-plugin-next";
 
-  export default defineConfig([...nextVitals, ...nextTs]);
+  export default [
+    { plugins: { "@next/next": next }, rules: { ...next.configs.recommended.rules, ...next.configs["core-web-vitals"].rules } }
+  ];
   ```
 
   (Drop the `nextTs` import/spread if the project has no `tsconfig.json`.)
@@ -99,7 +99,7 @@ Also create `.vscode/extensions.json` (or merge into it) recommending `dbaeumer.
 
 If you're using this plugin, PostToolUse formatting is already provided by `hooks/format.js` via `hooks/hooks.json` — no `.claude/settings.json` changes are needed.
 
-For a project repo without this plugin, read `.claude/settings.json` (create it if missing). Merge in a `PostToolUse` hook on matcher `Write|Edit` that runs Prettier (all files) and ESLint (JS/TS only) after every file edit.
+For a project repo without this plugin, read `.claude/settings.json` (create it if missing). Merge in a `PostToolUse` hook on matcher `Write|Edit` that runs Prettier (the edited file, using `--ignore-unknown`) and ESLint (JS/TS only) after every file edit.
 Detect the OS you're running on (e.g. check the platform the current shell/tools report, or ask if genuinely ambiguous) and use the matching variant below — do not default to Windows.
 
 **Windows** — `shell: "powershell"`:
@@ -114,7 +114,7 @@ Detect the OS you're running on (e.g. check the platform the current shell/tools
           {
             "type": "command",
             "shell": "powershell",
-            "command": "$j = [Console]::In.ReadToEnd() | ConvertFrom-Json; $f = $j.tool_input.file_path; if ($f) { npx prettier --write --ignore-unknown $f 2>$null; $ext = [IO.Path]::GetExtension($f); if ($ext -match '^\\.(ts|tsx|js|jsx|cjs|mjs)$') { npx eslint --fix $f 2>$null; if ($LASTEXITCODE -eq 2) { Write-Output 'ESLint config is broken (fatal error, exit 2) - run npx eslint manually to see the crash'; exit 1 } } }; exit 0"
+            "command": "$j = [Console]::In.ReadToEnd() | ConvertFrom-Json; $f = $j.tool_input.file_path; if ($f) { npx prettier --write --ignore-unknown $f 2>$null; if ($LASTEXITCODE -ne 0) { Write-Output 'Prettier failed - run npx prettier manually to see the error'; exit 1 } $ext = [IO.Path]::GetExtension($f); if ($ext -match '^\\.(ts|tsx|js|jsx|cjs|mjs)$') { npx eslint --fix $f 2>$null; if ($LASTEXITCODE -eq 2) { Write-Output 'ESLint config is broken (fatal error, exit 2) - run npx eslint manually to see the crash'; exit 1 } } }; exit 0",
             "timeout": 30,
             "statusMessage": "Formatting and linting..."
           }
@@ -137,7 +137,7 @@ Detect the OS you're running on (e.g. check the platform the current shell/tools
           {
             "type": "command",
             "shell": "bash",
-            "command": "f=$(node -e \"let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{const j=JSON.parse(d);process.stdout.write((j.tool_input&&j.tool_input.file_path)||'')}catch(e){}})\"); if [ -n \"$f\" ]; then npx prettier --write --ignore-unknown \"$f\" 2>/dev/null; if [[ \"$f\" =~ \\.(ts|tsx|js|jsx|cjs|mjs)$ ]]; then npx eslint --fix \"$f\" 2>/dev/null; code=$?; if [ \"$code\" -eq 2 ]; then echo 'ESLint config is broken (fatal error, exit 2) - run npx eslint manually to see the crash'; exit 1; fi; fi; fi; exit 0"
+            "command": "f=$(node -e \"let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{const j=JSON.parse(d);process.stdout.write((j.tool_input&&j.tool_input.file_path)||'')}catch(e){}})\"); if [ -n \"$f\" ]; then npx prettier --write --ignore-unknown \"$f\" 2>/dev/null; pcode=$?; if [ \"$pcode\" -ne 0 ]; then echo 'Prettier failed - run npx prettier manually to see the error'; exit 1; fi; if [[ \"$f\" =~ \\.(ts|tsx|js|jsx|cjs|mjs)$ ]]; then npx eslint --fix \"$f\" 2>/dev/null; code=$?; if [ \"$code\" -eq 2 ]; then echo 'ESLint config is broken (fatal error, exit 2) - run npx eslint manually to see the crash'; exit 1; fi; fi; fi; exit 0",
             "timeout": 30,
             "statusMessage": "Formatting and linting..."
           }
@@ -148,7 +148,7 @@ Detect the OS you're running on (e.g. check the platform the current shell/tools
 }
 ```
 
-The bash variant reads stdin JSON via `node -e` (not `jq`) since Node is already a guaranteed dependency of this project but `jq` isn't. Both variants use single-quoted JS/PowerShell string literals internally, so neither script itself needs raw double quotes inside its JS/PowerShell body beyond the ones already shown — don't restructure the quoting without re-verifying it still round-trips through JSON.
+The bash variant reads stdin JSON via `node -e` (not `jq`) because Claude Code / this plugin’s hook runner already invokes hooks via `node` (see `hooks/hooks.json`), while `jq` is not guaranteed to be installed. If Node isn’t available in your environment, replace this JSON-parsing step with a tool that is.
 
 ESLint exits `1` for ordinary lint findings (expected, non-blocking — keep swallowing these) but exits `2` for fatal errors like a missing/misconfigured plugin. Don't swallow exit `2` silently — surface it, otherwise a broken ESLint config becomes permanently invisible to every future edit.
 
