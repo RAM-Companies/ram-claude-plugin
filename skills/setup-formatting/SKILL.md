@@ -38,7 +38,7 @@ Verify with `npx eslint .` before continuing — it should run (even if it repor
 
 ## 2. Install ESLint and any plugins its config references
 
-Read `package.json`. If `eslint` is not already a devDependency, run `npm install --save-dev eslint` (and `eslint-config-next` if this is a Next.js project without it).
+Read `package.json`. If `eslint` is not already a devDependency, run `npm install --save-dev eslint`. For Next.js, install `eslint-config-next` only if the existing ESLint config extends it (common in legacy Next.js setups).
 
 Read the config file confirmed/created in step 1 and cross-check every plugin it _uses_ against what's actually installed:
 
