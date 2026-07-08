@@ -98,8 +98,9 @@ Also create `.vscode/extensions.json` (or merge into it) recommending `dbaeumer.
 
 ## 8. Add Claude Code post-edit hook
 
-Read `.claude/settings.json` (create it if missing). Merge in a `PostToolUse` hook on matcher `Write|Edit` that runs prettier then eslint after every file edit.
+If you're using this plugin, PostToolUse formatting is already provided by `hooks/format.js` via `hooks/hooks.json` — no `.claude/settings.json` changes are needed.
 
+For a project repo without this plugin, read `.claude/settings.json` (create it if missing). Merge in a `PostToolUse` hook on matcher `Write|Edit` that runs prettier then eslint after every file edit.
 Detect the OS you're running on (e.g. check the platform the current shell/tools report, or ask if genuinely ambiguous) and use the matching variant below — do not default to Windows.
 
 **Windows** — `shell: "powershell"`:
