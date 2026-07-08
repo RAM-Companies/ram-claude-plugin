@@ -9,8 +9,8 @@ const os = require("os");
 const HOOKS_DIR = path.join(__dirname, "..", "..", "hooks");
 const STUB_BIN = path.join(__dirname, "stub-bin");
 
-// Windows-only stub `npx`/`npm` on PATH ahead of anything real, so tests never
-// depend on what's actually installed on the machine running them.
+// Stub `npx`/`npm` on PATH ahead of anything real, so tests never depend on
+// what's actually installed on the machine running them.
 function runHook(hookFile, input, opts = {}) {
   const scriptPath = path.join(HOOKS_DIR, hookFile);
   const PATH =
