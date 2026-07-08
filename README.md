@@ -36,6 +36,7 @@ claude plugin marketplace update ram-companies
 | `new-feature`       | `/ram:new-feature`       | Scaffold a new feature folder following feature-based architecture                |
 | `pr-review`         | `/ram:pr-review`         | Full PR review: conventions, security, code quality, docs accuracy                |
 | `setup-env-local`   | `/ram:setup-env-local`   | Write VITE_SUPABASE_ANON_KEY to .env.local for local Supabase development         |
+| `setup-formatting`  | `/ram:setup-formatting`  | Set up Prettier, ESLint auto-fix, EditorConfig, and VS Code format-on-save        |
 | `ui-update`         | `/ram:ui-update`         | Safely apply a UI change everywhere it appears across the repo                    |
 | `unit-tests`        | `/ram:unit-tests`        | Write Vitest unit tests for pure functions in src/                                |
 
