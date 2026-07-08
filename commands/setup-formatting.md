@@ -81,18 +81,17 @@ Read `package.json`. If a `format` script is not already present in `scripts`, a
 
 Create `.vscode/settings.json` if it does not exist:
 
-```json
+~~~json
 {
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
-  },
-  "eslint.useFlatConfig": true
+  }
 }
-```
+~~~
 
-If it already exists, read it and merge in those keys without removing any existing keys.
+If you are using a flat config (`eslint.config.*`), add `"eslint.useFlatConfig": true`. If you are using a legacy `.eslintrc.*`, omit it (or set it to `false`).
 
 Also create `.vscode/extensions.json` (or merge into it) recommending `dbaeumer.vscode-eslint` and `esbenp.prettier-vscode` — without the ESLint extension installed, `editor.codeActionsOnSave` has nothing to trigger and saves will silently only run Prettier.
 
@@ -115,7 +114,7 @@ Detect the OS you're running on (e.g. check the platform the current shell/tools
           {
             "type": "command",
             "shell": "powershell",
-            "command": "$j = [Console]::In.ReadToEnd() | ConvertFrom-Json; $f = $j.tool_input.file_path; if ($f) { npx prettier --write --ignore-unknown $f 2>$null; npx eslint --fix $f 2>$null; if ($LASTEXITCODE -eq 2) { Write-Output 'ESLint config is broken (fatal error, exit 2) - run npx eslint manually to see the crash'; exit 1 } }; exit 0",
+            "command": "$j = [Console]::In.ReadToEnd() | ConvertFrom-Json; $f = $j.tool_input.file_path; if ($f) { npx prettier --write --ignore-unknown $f 2>$null; $ext = [IO.Path]::GetExtension($f); if ($ext -match '^\\.(ts|tsx|js|jsx|cjs|mjs)$') { npx eslint --fix $f 2>$null; if ($LASTEXITCODE -eq 2) { Write-Output 'ESLint config is broken (fatal error, exit 2) - run npx eslint manually to see the crash'; exit 1 } } }; exit 0"
             "timeout": 30,
             "statusMessage": "Formatting and linting..."
           }
@@ -138,7 +137,7 @@ Detect the OS you're running on (e.g. check the platform the current shell/tools
           {
             "type": "command",
             "shell": "bash",
-            "command": "f=$(node -e \"let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{const j=JSON.parse(d);process.stdout.write((j.tool_input&&j.tool_input.file_path)||'')}catch(e){}})\"); if [ -n \"$f\" ]; then npx prettier --write --ignore-unknown \"$f\" 2>/dev/null; npx eslint --fix \"$f\" 2>/dev/null; code=$?; if [ \"$code\" -eq 2 ]; then echo 'ESLint config is broken (fatal error, exit 2) - run npx eslint manually to see the crash'; exit 1; fi; fi; exit 0",
+            "command": "f=$(node -e \"let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{const j=JSON.parse(d);process.stdout.write((j.tool_input&&j.tool_input.file_path)||'')}catch(e){}})\"); if [ -n \"$f\" ]; then npx prettier --write --ignore-unknown \"$f\" 2>/dev/null; if [[ \"$f\" =~ \\.(ts|tsx|js|jsx|cjs|mjs)$ ]]; then npx eslint --fix \"$f\" 2>/dev/null; code=$?; if [ \"$code\" -eq 2 ]; then echo 'ESLint config is broken (fatal error, exit 2) - run npx eslint manually to see the crash'; exit 1; fi; fi; fi; exit 0"
             "timeout": 30,
             "statusMessage": "Formatting and linting..."
           }
