@@ -1,4 +1,7 @@
-# Setup Formatting
+---
+name: setup-formatting
+description: Set up Prettier, ESLint auto-fix, EditorConfig, and VS Code format-on-save for a project. Use when adding formatting tooling to a new or existing repo.
+---
 
 Set up Prettier, ESLint auto-fix, EditorConfig, and VS Code format-on-save for this project. Perform each step below in order.
 
@@ -81,7 +84,7 @@ Read `package.json`. If a `format` script is not already present in `scripts`, a
 
 Create `.vscode/settings.json` if it does not exist:
 
-~~~json
+```json
 {
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
@@ -89,7 +92,7 @@ Create `.vscode/settings.json` if it does not exist:
     "source.fixAll.eslint": "explicit"
   }
 }
-~~~
+```
 
 If you are using a flat config (`eslint.config.*`), add `"eslint.useFlatConfig": true`. If you are using a legacy `.eslintrc.*`, omit it (or set it to `false`).
 
@@ -97,12 +100,82 @@ Also create `.vscode/extensions.json` (or merge into it) recommending `dbaeumer.
 
 ## 8. Add Claude Code post-edit hook
 
-If you're using this plugin, PostToolUse formatting is already provided by `hooks/format.js` via `hooks/hooks.json` — no `.claude/settings.json` changes are needed.
+If this is a project using the RAM plugin, PostToolUse formatting is already provided by `hooks/format.js` via `hooks/hooks.json` — no `.claude/settings.json` changes are needed.
 
-For a project repo without this plugin, read `.claude/settings.json` (create it if missing). Merge in a `PostToolUse` hook on matcher `Write|Edit` that runs Prettier (the edited file, using `--ignore-unknown`) and ESLint (JS/TS only) after every file edit.
-Detect the OS you're running on (e.g. check the platform the current shell/tools report, or ask if genuinely ambiguous) and use the matching variant below — do not default to Windows.
+For a project repo without this plugin, copy the hook script and wire it up:
 
-**Windows** — `shell: "powershell"`:
+**a. Create `.claude/hooks/format.js`** with this content:
+
+```js
+// PostToolUse: eslint --fix + prettier --write on every Write/Edit
+const { spawnSync } = require("child_process");
+const fs = require("fs");
+const path = require("path");
+
+const d = JSON.parse(fs.readFileSync(0, "utf8"));
+const f = d?.tool_input?.file_path;
+if (!f) process.exit(0);
+
+const cwd = process.cwd();
+const messages = [];
+
+// ESLint only understands JS/TS source files — running it on README.md,
+// package.json, etc. produces noisy "fatal" errors for unsupported file types.
+if (/\.(ts|tsx|js|jsx|cjs|mjs)$/.test(f)) {
+  const eslint = spawnSync("npx", ["eslint", "--fix", f], {
+    cwd,
+    encoding: "utf8",
+    shell: true,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  // Exit 1 = unfixable lint warnings (expected). Exit 2 = fatal: bad config, parse error.
+  if (eslint.status === 2) {
+    const detail = ((eslint.stdout || "") + (eslint.stderr || ""))
+      .trim()
+      .split("\n")
+      .slice(0, 10)
+      .join("\n");
+    messages.push(
+      `ESLint fatal error on ${path.basename(f)} — linting was not applied:\n${detail}`,
+    );
+  }
+}
+
+const prettier = spawnSync(
+  "npx",
+  ["prettier", "--write", "--ignore-unknown", f],
+  {
+    cwd,
+    encoding: "utf8",
+    shell: true,
+    stdio: ["ignore", "pipe", "pipe"],
+  },
+);
+if (prettier.status !== 0) {
+  const detail = ((prettier.stdout || "") + (prettier.stderr || ""))
+    .trim()
+    .split("\n")
+    .slice(0, 10)
+    .join("\n");
+  messages.push(
+    `Prettier error on ${path.basename(f)} — formatting was not applied:\n${detail}`,
+  );
+}
+
+// Emit a single JSON payload — concatenated JSON objects are invalid and may be ignored.
+if (messages.length) {
+  process.stdout.write(
+    JSON.stringify({
+      hookSpecificOutput: {
+        hookEventName: "PostToolUse",
+        additionalContext: messages.join("\n\n"),
+      },
+    }),
+  );
+}
+```
+
+**b. Wire it in `.claude/settings.json`** (create if missing):
 
 ```json
 {
@@ -113,8 +186,8 @@ Detect the OS you're running on (e.g. check the platform the current shell/tools
         "hooks": [
           {
             "type": "command",
-            "shell": "powershell",
-            "command": "$j = [Console]::In.ReadToEnd() | ConvertFrom-Json; $f = $j.tool_input.file_path; if ($f) { npx prettier --write --ignore-unknown \"$f\" 2>$null; if ($LASTEXITCODE -ne 0) { Write-Output 'Prettier failed - run npx prettier manually to see the error'; exit 1 } $ext = [IO.Path]::GetExtension($f); if ($ext -match '^\\.(ts|tsx|js|jsx|cjs|mjs)$') { npx eslint --fix \"$f\" 2>$null; if ($LASTEXITCODE -eq 2) { Write-Output 'ESLint config is broken (fatal error, exit 2) - run npx eslint manually to see the crash'; exit 1 } } }; exit 0",
+            "command": "node",
+            "args": [".claude/hooks/format.js"],
             "timeout": 30,
             "statusMessage": "Formatting and linting..."
           }
@@ -125,34 +198,7 @@ Detect the OS you're running on (e.g. check the platform the current shell/tools
 }
 ```
 
-**macOS / Linux** — `shell: "bash"`:
-
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "shell": "bash",
-            "command": "f=$(node -e \"let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{const j=JSON.parse(d);process.stdout.write((j.tool_input&&j.tool_input.file_path)||'')}catch(e){}})\"); if [ -n \"$f\" ]; then npx prettier --write --ignore-unknown \"$f\" 2>/dev/null; pcode=$?; if [ \"$pcode\" -ne 0 ]; then echo 'Prettier failed - run npx prettier manually to see the error'; exit 1; fi; if [[ \"$f\" =~ \\.(ts|tsx|js|jsx|cjs|mjs)$ ]]; then npx eslint --fix \"$f\" 2>/dev/null; code=$?; if [ \"$code\" -eq 2 ]; then echo 'ESLint config is broken (fatal error, exit 2) - run npx eslint manually to see the crash'; exit 1; fi; fi; fi; exit 0",
-            "timeout": 30,
-            "statusMessage": "Formatting and linting..."
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-The bash variant reads stdin JSON via `node -e` (not `jq`) because Claude Code / this plugin’s hook runner already invokes hooks via `node` (see `hooks/hooks.json`), while `jq` is not guaranteed to be installed. If Node isn’t available in your environment, replace this JSON-parsing step with a tool that is.
-
-ESLint exits `1` for ordinary lint findings (expected, non-blocking — keep swallowing these) but exits `2` for fatal errors like a missing/misconfigured plugin. Don't swallow exit `2` silently — surface it, otherwise a broken ESLint config becomes permanently invisible to every future edit.
-
-If a `PostToolUse` / `Write|Edit` hook already exists, show the existing command and ask whether to replace it or leave it.
+Using `node` directly (exec form, no shell) works on all OSes without OS-specific shell variants. If a `PostToolUse` / `Write|Edit` hook already exists, show the existing command and ask whether to replace it or leave it.
 
 ## 9. Create `.editorconfig`
 
@@ -181,4 +227,6 @@ Run `npx eslint --fix .` (ESLint) and `npm run format` (Prettier) to apply both 
 
 ## 11. Verify
 
-Run `npx tsc --noEmit` and `npx eslint .` to confirm no errors were introduced by formatting. If `npx eslint .` prints "Oops! Something went wrong!" instead of lint results, the config itself is broken (e.g. a rule references a plugin that was never installed/registered) — fix that before treating the setup as complete.
+Run `npx eslint .` to confirm no errors were introduced by formatting. If it prints "Oops! Something went wrong!" instead of lint results, the config itself is broken (e.g. a rule references a plugin that was never installed/registered) — fix that before treating the setup as complete.
+
+If a `tsconfig.json` exists in the project root, also run `npx tsc --noEmit`. Skip it on JS-only projects — without a tsconfig, `npx tsc` either exits 1 with the help banner (typescript installed) or resolves an unrelated npm package (typescript not installed), both of which falsely indicate a broken setup.
