@@ -24,6 +24,8 @@ ram-claude-plugin/
 ├── .claude-plugin/
 │   ├── plugin.json          # Plugin identity (name, version, description)
 │   └── marketplace.json     # RAM Companies marketplace registration
+├── .claude/
+│   └── settings.json        # Dogfoods this repo's own hooks (see below)
 ├── skills/
 │   └── <skill-name>/
 │       └── SKILL.md         # One skill per subdirectory
@@ -33,8 +35,11 @@ ram-claude-plugin/
 │   ├── format.js            # PostToolUse: ESLint + Prettier
 │   ├── post-write-checks.js # PostToolUse: code quality + secret scan
 │   └── stop-check.js        # Stop: tsc + npm test
+├── tests/                   # node:test suite for the hook scripts
 └── README.md
 ```
+
+`.claude/settings.json` wires this repo's own `hooks/*.js` scripts up via `${CLAUDE_PROJECT_DIR}` so working on this plugin exercises the same hooks a consumer project gets — most usefully, `stop-check.js` runs `npm test` (the hook test suite) at the end of every session in this repo. It intentionally duplicates the four hook entries from `hooks/hooks.json` (which uses `${CLAUDE_PLUGIN_ROOT}`, only resolved when the plugin is actually installed) rather than self-installing via a local marketplace path — marketplace-installed plugins are copied into `~/.claude/plugins/cache`, so hook script edits wouldn't take effect without a reinstall. Keep both files in sync when adding or changing a hook.
 
 **Rules enforced by the official spec:**
 
@@ -181,6 +186,17 @@ Always reference hook scripts using the `${CLAUDE_PLUGIN_ROOT}` path placeholder
 
 This resolves to the plugin's installation directory at runtime. Do not hardcode `~/.claude/plugins/cache/...` paths or use PowerShell globs to find scripts — those are fragile workarounds. The exec form (`args` array) avoids shell tokenization and quoting issues on Windows, and is preferred by the official docs for hooks with path variables.
 
+### Keep `hooks/hooks.json` and `.claude/settings.json` in sync
+
+`.claude/settings.json` exists solely so this repo dogfoods its own hooks while you develop them — it's never shipped to or read by consumer projects (they only get `hooks/hooks.json`, via `plugin.json`'s `hooks` field). The two files must stay structurally identical: same events, same matchers, same script list, same order, same `timeout`/`statusMessage` — the **only** difference is the path variable in `args`:
+
+| File | Path variable |
+| --- | --- |
+| `hooks/hooks.json` | `${CLAUDE_PLUGIN_ROOT}/hooks/<script>.js` |
+| `.claude/settings.json` | `${CLAUDE_PROJECT_DIR}/hooks/<script>.js` |
+
+Whenever you add, remove, or change a hook entry in `hooks/hooks.json` (new script, changed matcher, changed timeout), make the identical edit in `.claude/settings.json`, swapping only the path variable. Nothing enforces this automatically — `claude plugin validate` only checks `hooks/hooks.json` — so treat it as one logical change across two files, not two separate edits. If the files drift, this repo silently stops dogfooding whatever changed.
+
 ### Exit codes — the contract
 
 | Exit code | Meaning | Effect |
@@ -302,6 +318,16 @@ Simulate hook input by piping JSON:
 ```bash
 echo '{"hook_event_name":"PostToolUse","tool_name":"Write","tool_input":{"file_path":"src/foo.ts","content":"const x: any = 1;"}}' | node hooks/post-write-checks.js
 ```
+
+### Automated hook tests
+
+`tests/*.test.js` covers all four hook scripts using Node's built-in test runner (no dependencies). They spawn each hook as a real child process with controlled stdin and a stubbed `npx`/`npm` on `PATH` (`tests/helpers/`), so they exercise actual exit-code/stdout behavior — including the failure modes that tend to go unnoticed when this plugin runs inside someone else's project (malformed stdin, ESLint/Prettier/tsc missing or misbehaving, timeouts).
+
+```bash
+npm test
+```
+
+Run this after changing any hook script. If you add a new hook, add a matching `tests/<hook-name>.test.js`.
 
 ### Validate before release
 
@@ -469,4 +495,7 @@ BREAKING CHANGE: all references to `quotes` must be updated to `proposals`
 - [ ] No `console.log` — use `process.stderr.write` or JSON stdout
 - [ ] Timeout is set appropriately in `hooks.json`
 - [ ] Test by piping JSON to the script directly
+- [ ] Top-level logic is wrapped in try/catch so malformed/unexpected input exits clean instead of crashing uncaught (see existing hooks for the pattern)
+- [ ] Mirror the new/changed hook entry in `.claude/settings.json` (see [Keep hooks.json and .claude/settings.json in sync](#keep-hookshooksjson-and-claudesettingsjson-in-sync))
+- [ ] Add `tests/<hook-name>.test.js` covering the normal path, guard clauses, and malformed input; run `npm test`
 - [ ] Bump `PATCH` version in `plugin.json`
