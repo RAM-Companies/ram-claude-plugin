@@ -27,6 +27,7 @@ claude plugin marketplace update ram-companies
 | Skill               | Invoke                   | Purpose                                                                           |
 | ------------------- | ------------------------ | --------------------------------------------------------------------------------- |
 | `add-migration`     | `/ram:add-migration`     | Create a Supabase migration (DDL + pgTAP tests + type regen)                      |
+| `codebase-review`   | `/ram:codebase-review`   | Full-codebase audit: security, performance, best practices (for vibe-coded apps)  |
 | `deno-tests`        | `/ram:deno-tests`        | Add unit tests to a Supabase Edge Function                                        |
 | `extract-component` | `/ram:extract-component` | Pull a section out of a large file into a standalone component                    |
 | `extract-service`   | `/ram:extract-service`   | Move inline Supabase queries into a service layer                                 |
@@ -42,12 +43,12 @@ claude plugin marketplace update ram-companies
 
 Automatically wired when the plugin is enabled:
 
-| Hook | Trigger | What it does |
-| --- | --- | --- |
-| `protect-generated.js` | PreToolUse Write/Edit | Blocks edits to auto-generated `types.ts`; warns before editing migrations |
-| `format.js` | PostToolUse Write/Edit | Runs ESLint `--fix` + Prettier on every saved file |
+| Hook                   | Trigger                | What it does                                                                                                                                                     |
+| ---------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `protect-generated.js` | PreToolUse Write/Edit  | Blocks edits to auto-generated `types.ts`; warns before editing migrations                                                                                       |
+| `format.js`            | PostToolUse Write/Edit | Runs ESLint `--fix` + Prettier on every saved file                                                                                                               |
 | `post-write-checks.js` | PostToolUse Write/Edit | Flags `as any`, `window.confirm()`, silent `.catch`, inline `style={{}}`, Supabase in pages/, admin layout constants, hardcoded secrets; notes related importers |
-| `stop-check.js` | Stop | Runs `tsc --noEmit` + `npm test` at session end; silent on pass |
+| `stop-check.js`        | Stop                   | Runs `tsc --noEmit` + `npm test` at session end; silent on pass                                                                                                  |
 
 ## Project-local skills
 
