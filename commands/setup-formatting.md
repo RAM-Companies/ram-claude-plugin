@@ -18,7 +18,7 @@ If none exists, create a flat config baseline appropriate to the project:
   ];
   ```
 
-  (Drop the `nextTs` import/spread if the project has no `tsconfig.json`.)
+(If the project has no `tsconfig.json`, skip any TypeScript-specific ESLint config additions.)
 
 - **Any other Node/TS project**: run `npm install --save-dev eslint @eslint/js` (add `typescript-eslint` too if a `tsconfig.json` is present), then create `eslint.config.mjs`:
 
@@ -52,7 +52,7 @@ Read `package.json`. If a `lint` script is not already present in `scripts`, add
 "lint": "eslint ."
 ```
 
-## 4. Install prettier
+## 4. Install Prettier
 
 Run `npm install --save-dev prettier` to add prettier to devDependencies.
 
@@ -114,7 +114,7 @@ Detect the OS you're running on (e.g. check the platform the current shell/tools
           {
             "type": "command",
             "shell": "powershell",
-            "command": "$j = [Console]::In.ReadToEnd() | ConvertFrom-Json; $f = $j.tool_input.file_path; if ($f) { npx prettier --write --ignore-unknown $f 2>$null; if ($LASTEXITCODE -ne 0) { Write-Output 'Prettier failed - run npx prettier manually to see the error'; exit 1 } $ext = [IO.Path]::GetExtension($f); if ($ext -match '^\\.(ts|tsx|js|jsx|cjs|mjs)$') { npx eslint --fix $f 2>$null; if ($LASTEXITCODE -eq 2) { Write-Output 'ESLint config is broken (fatal error, exit 2) - run npx eslint manually to see the crash'; exit 1 } } }; exit 0",
+            "command": "$j = [Console]::In.ReadToEnd() | ConvertFrom-Json; $f = $j.tool_input.file_path; if ($f) { npx prettier --write --ignore-unknown \"$f\" 2>$null; if ($LASTEXITCODE -ne 0) { Write-Output 'Prettier failed - run npx prettier manually to see the error'; exit 1 } $ext = [IO.Path]::GetExtension($f); if ($ext -match '^\\.(ts|tsx|js|jsx|cjs|mjs)$') { npx eslint --fix \"$f\" 2>$null; if ($LASTEXITCODE -eq 2) { Write-Output 'ESLint config is broken (fatal error, exit 2) - run npx eslint manually to see the crash'; exit 1 } } }; exit 0",
             "timeout": 30,
             "statusMessage": "Formatting and linting..."
           }
@@ -177,7 +177,7 @@ If it already exists, read it and report its current contents without overwritin
 
 ## 10. Format and lint the repo
 
-Run `npm run format` (Prettier) and `npx eslint --fix .` (ESLint) to apply both configs across all existing files. Running only Prettier here would leave pre-existing files in violation of any newly-added lint rules until each one happens to be touched later.
+Run `npx eslint --fix .` (ESLint) and `npm run format` (Prettier) to apply both configs across all existing files. Running only Prettier here would leave pre-existing files in violation of any newly-added lint rules until each one happens to be touched later.
 
 ## 11. Verify
 
