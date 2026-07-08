@@ -49,7 +49,7 @@ Verify by running `npx eslint .` — if it prints "Oops! Something went wrong!" 
 Read `package.json`. If a `lint` script is not already present in `scripts`, add:
 
 ```json
-"lint": "eslint"
+"lint": "eslint ."
 ```
 
 ## 4. Install prettier
@@ -99,7 +99,7 @@ Also create `.vscode/extensions.json` (or merge into it) recommending `dbaeumer.
 
 If you're using this plugin, PostToolUse formatting is already provided by `hooks/format.js` via `hooks/hooks.json` — no `.claude/settings.json` changes are needed.
 
-For a project repo without this plugin, read `.claude/settings.json` (create it if missing). Merge in a `PostToolUse` hook on matcher `Write|Edit` that runs prettier then eslint after every file edit.
+For a project repo without this plugin, read `.claude/settings.json` (create it if missing). Merge in a `PostToolUse` hook on matcher `Write|Edit` that runs Prettier (all files) and ESLint (JS/TS only) after every file edit.
 Detect the OS you're running on (e.g. check the platform the current shell/tools report, or ask if genuinely ambiguous) and use the matching variant below — do not default to Windows.
 
 **Windows** — `shell: "powershell"`:
@@ -181,4 +181,4 @@ Run `npm run format` (Prettier) and `npx eslint --fix .` (ESLint) to apply both 
 
 ## 11. Verify
 
-Run `npx tsc --noEmit` and `npx eslint` to confirm no errors were introduced by formatting. If `npx eslint` prints "Oops! Something went wrong!" instead of lint results, the config itself is broken (e.g. a rule references a plugin that was never installed/registered) — fix that before treating the setup as complete.
+Run `npx tsc --noEmit` and `npx eslint .` to confirm no errors were introduced by formatting. If `npx eslint .` prints "Oops! Something went wrong!" instead of lint results, the config itself is broken (e.g. a rule references a plugin that was never installed/registered) — fix that before treating the setup as complete.
