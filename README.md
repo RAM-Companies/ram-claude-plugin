@@ -16,6 +16,13 @@ Then install the plugin:
 claude plugin install ram@ram-companies
 ```
 
+This plugin can also be used with [copilot](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/plugins-finding-installing) by replacing `claude` with `copilot`. E.g.
+
+```bash
+copilot plugin marketplace add RAM-Companies/ram-claude-plugin
+copilot plugin install ram@ram-companies
+```
+
 ## Update
 
 ```bash
