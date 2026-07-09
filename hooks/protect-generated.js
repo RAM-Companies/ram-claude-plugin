@@ -2,22 +2,40 @@
 const fs = require("fs");
 const path = require("path");
 
+// RAM projects have used more than one convention for where the Supabase
+// CLI writes its generated types file — add new ones here as they show up:
+//   - Vite/CRA SPA:        src/integrations/supabase/types.ts
+//   - any src/**/supabase: src/lib/supabase/types.ts, etc.
+//   - Next.js App Router:  lib/types/database.types.ts (matched by filename
+//                           alone, since `database.types.ts` is distinctive
+//                           enough not to collide with unrelated types files)
+const GENERATED_TYPES_PATTERNS = [
+  /integrations[/\\]supabase[/\\]types\.ts$/,
+  /[/\\]supabase[/\\]types\.ts$/,
+  /database\.types\.ts$/
+];
+
+function isGeneratedTypesFile(f) {
+  return GENERATED_TYPES_PATTERNS.some((re) => re.test(f));
+}
+
 try {
   const d = JSON.parse(fs.readFileSync(0, "utf8"));
   const f = d?.tool_input?.file_path;
   if (!f) process.exit(0);
 
   // Hard block: auto-generated Supabase types
-  if (/integrations[/\\]supabase[/\\]types\.ts$/.test(f)) {
+  if (isGeneratedTypesFile(f)) {
     process.stdout.write(
       JSON.stringify({
         hookSpecificOutput: {
           hookEventName: "PreToolUse",
           permissionDecision: "deny",
           permissionDecisionReason:
-            "src/integrations/supabase/types.ts is auto-generated from the live DB schema — do not edit by hand.\n\n" +
-            "Regenerate it after schema migrations:\n" +
-            "  supabase gen types typescript --local > src/integrations/supabase/types.ts"
+            `${f} is auto-generated from the live DB schema — do not edit by hand.\n\n` +
+            "Regenerate it after schema migrations, e.g.:\n" +
+            `  supabase gen types typescript --local > ${f}\n` +
+            `  # or, for a hosted project: npx supabase gen types typescript --project-id <id> > ${f}`
         }
       })
     );
