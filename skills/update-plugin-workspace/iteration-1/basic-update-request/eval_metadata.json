@@ -1,0 +1,11 @@
+{
+  "eval_id": 1,
+  "eval_name": "basic-update-request",
+  "prompt": "How do I get the newest version of the ram plugin? I heard there's a new skill I want to try out.",
+  "assertions": [
+    "Runs or instructs `claude plugin marketplace update ram-companies` before attempting the update",
+    "Asks whether to update at `user` or `project` scope before running the update, since the prompt doesn't specify",
+    "Runs or instructs `claude plugin update ram@ram-companies` (with `--scope project` if that's the resolved scope)",
+    "Suggests verifying the result with `claude plugin list`"
+  ]
+}

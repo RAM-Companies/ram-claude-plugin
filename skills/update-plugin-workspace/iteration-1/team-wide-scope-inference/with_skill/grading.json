@@ -1,0 +1,29 @@
+{
+  "expectations": [
+    {
+      "text": "Infers project scope from the 'whole team' phrasing instead of asking a redundant scope question",
+      "passed": true,
+      "evidence": "Resolves scope to 'project' directly, citing 'whole team on this project' as the reason, without re-asking."
+    },
+    {
+      "text": "Runs or instructs `claude plugin update ram@ram-companies --scope project`",
+      "passed": true,
+      "evidence": "Step 3 gives that exact command."
+    },
+    {
+      "text": "Confirms the installed version now matches 1.6.0, e.g. via `claude plugin list`",
+      "passed": true,
+      "evidence": "Step 4 says it will confirm the `ram` entry shows 1.6.0 via `claude plugin list`."
+    }
+  ],
+  "summary": { "passed": 3, "failed": 0, "total": 3, "pass_rate": 1.0 },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "Infers project scope from the 'whole team' phrasing instead of asking a redundant scope question",
+        "reason": "The with-skill run correctly resolves 'whole team' to --scope project, but never surfaces that --scope project only pins the version in git-committed settings.json — it does not push the update to teammates' machines. Each teammate still has to pull that commit and run their own `claude plugin marketplace update` to actually receive 1.6.0. The without-skill baseline caught this nuance; the skill should too."
+      }
+    ],
+    "overall": "Assertion 1 as written only checks that project scope is inferred, not that the response correctly explains what project scope does and doesn't accomplish for teammates. Consider tightening it or adding a fourth assertion about this distinction."
+  }
+}

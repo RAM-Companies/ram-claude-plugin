@@ -1,0 +1,25 @@
+{
+  "expectations": [
+    {
+      "text": "Runs or instructs `claude plugin marketplace update ram-companies` before attempting the update",
+      "passed": true,
+      "evidence": "Step 1 gives that exact command before anything else."
+    },
+    {
+      "text": "Asks whether to update at `user` or `project` scope before running the update",
+      "passed": true,
+      "evidence": "Step 2 explicitly asks 'should this update apply just to you, or to the whole team?' with both options explained."
+    },
+    {
+      "text": "Runs or instructs `claude plugin update ram@ram-companies` (with `--scope project` if resolved)",
+      "passed": true,
+      "evidence": "Step 3 gives both the plain command and the `--scope project` variant, conditioned on the user's answer."
+    },
+    {
+      "text": "Suggests verifying the result with `claude plugin list`",
+      "passed": true,
+      "evidence": "Step 4 gives that exact command and explains what to check for."
+    }
+  ],
+  "summary": { "passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0 }
+}

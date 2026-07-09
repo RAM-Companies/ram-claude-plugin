@@ -1,0 +1,20 @@
+{
+  "expectations": [
+    {
+      "text": "Suggests re-running `claude plugin marketplace update ram-companies` to refresh the local catalog",
+      "passed": true,
+      "evidence": "Listed as cause #2 with the exact command to fix it."
+    },
+    {
+      "text": "Suggests checking whether the version bump in `plugin.json` has actually been merged to `main` yet",
+      "passed": true,
+      "evidence": "Listed as cause #1, and it verified directly that `main` is at 1.4.1."
+    },
+    {
+      "text": "Does not conclude the update command is broken without first ruling out these two causes",
+      "passed": true,
+      "evidence": "Explicitly frames the outcome as 'everything is working correctly' pending those checks, not a broken command."
+    }
+  ],
+  "summary": { "passed": 3, "failed": 0, "total": 3, "pass_rate": 1.0 }
+}

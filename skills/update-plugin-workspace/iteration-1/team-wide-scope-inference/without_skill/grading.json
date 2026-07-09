@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "Infers project scope from the 'whole team' phrasing instead of asking a redundant scope question",
+      "passed": false,
+      "evidence": "Instead of resolving to project scope, it stops and asks which repo the user means. Substantively a good catch (see user_notes_summary), but it does not satisfy this assertion as written."
+    },
+    {
+      "text": "Runs or instructs `claude plugin update ram@ram-companies --scope project`",
+      "passed": false,
+      "evidence": "The closest it gets is 'Run `claude plugin marketplace update ram-companies` and `claude plugin install ram@ram-companies` locally' — that's `install`, not `update`, has no `--scope project` flag, and is explicitly scoped to 'your own copy', not the team."
+    },
+    {
+      "text": "Confirms the installed version now matches 1.6.0, e.g. via `claude plugin list`",
+      "passed": false,
+      "evidence": "No `claude plugin list` verification step; it only checks `plugin.json` on `main` via git, not the locally installed version."
+    }
+  ],
+  "summary": { "passed": 0, "failed": 3, "total": 3, "pass_rate": 0.0 },
+  "user_notes_summary": {
+    "uncertainties": [
+      "Correctly identified that this repo (ram-claude-plugin) does not itself consume ram@ram-companies via the marketplace, so there is nothing to update in the current working directory in the first place",
+      "Correctly identified that --scope project only pins config in git — it doesn't push the update to teammates, who each still need to pull and refresh locally"
+    ],
+    "needs_review": [
+      "This response is arguably more correct than the with-skill response for this specific repo, even though it fails the literal assertions — see eval_feedback on the with-skill grading.json"
+    ],
+    "workarounds": []
+  }
+}
