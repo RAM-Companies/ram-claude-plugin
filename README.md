@@ -122,7 +122,7 @@ Write 2-3 prompts per skill covering the common case plus at least one edge case
      --static <output.html>
    ```
 
-Ask Claude to "run the eval harness for `<skill-name>`" and it will do all of the above — see `skills/update-plugin/evals/evals.json` and `skills/update-plugin-workspace/` for a worked example, including a case where the baseline caught a real gap in the skill.
+Ask Claude to "run the eval harness for `<skill-name>`" and it will do all of the above. See `skills/update-plugin/evals/evals.json` for an example eval set — running it turned up a real gap in the `update-plugin` skill (it doesn't explain that `--scope project` only pins config in git and doesn't push the update to teammates' machines), caught by comparing against the no-skill baseline. `<skill-name>-workspace/` is scratch output from that run — regenerate it locally rather than committing it; it's gitignored.
 
 ### Iterating
 
