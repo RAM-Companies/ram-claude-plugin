@@ -58,6 +58,7 @@ then invoke it as `/ram:<skill-name>` and run `/reload-plugins` after edits to p
 | `setup-formatting`  | `/ram:setup-formatting`  | Set up Prettier, ESLint auto-fix, EditorConfig, and VS Code format-on-save        |
 | `ui-update`         | `/ram:ui-update`         | Safely apply a UI change everywhere it appears across the repo                    |
 | `unit-tests`        | `/ram:unit-tests`        | Write Vitest unit tests for pure functions in src/                                |
+| `update-plugin`     | `/ram:update-plugin`     | Update the installed ram plugin to the latest marketplace version                 |
 
 ## Hooks
 
