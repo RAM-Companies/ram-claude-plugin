@@ -6,7 +6,8 @@
   "scripts": {
     "test": "node --test tests/*.test.js",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "validate-skill-evals": "node scripts/validate-skill-evals.js"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

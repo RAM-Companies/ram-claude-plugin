@@ -7,7 +7,9 @@
           {
             "type": "command",
             "command": "node",
-            "args": ["${CLAUDE_PROJECT_DIR}/hooks/protect-generated.js"],
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/hooks/protect-generated.js"
+            ],
             "timeout": 10
           }
         ]
@@ -20,14 +22,18 @@
           {
             "type": "command",
             "command": "node",
-            "args": ["${CLAUDE_PROJECT_DIR}/hooks/format.js"],
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/hooks/format.js"
+            ],
             "timeout": 30,
             "statusMessage": "Linting and formatting..."
           },
           {
             "type": "command",
             "command": "node",
-            "args": ["${CLAUDE_PROJECT_DIR}/hooks/post-write-checks.js"],
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/hooks/post-write-checks.js"
+            ],
             "timeout": 10
           }
         ]
@@ -39,12 +45,17 @@
           {
             "type": "command",
             "command": "node",
-            "args": ["${CLAUDE_PROJECT_DIR}/hooks/stop-check.js"],
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/hooks/stop-check.js"
+            ],
             "timeout": 120,
             "statusMessage": "Running type-check and tests..."
           }
         ]
       }
     ]
+  },
+  "enabledPlugins": {
+    "skill-creator@claude-plugins-official": true
   }
 }
