@@ -1,6 +1,6 @@
 ---
 name: ui-update
-description: Safely update a UI component, Tailwind class string, or style constant everywhere it is used across the codebase. Finds all usages first, shows a plan, applies to every file, then verifies nothing was missed. Use when asked to change a button style, badge color, form layout, or any visual pattern that may exist in multiple places.
+description: Safely update a UI component, Tailwind class string, style constant, or hardcoded value (a color, label, or class string copy-pasted into more than one component) everywhere it is used across the codebase — not just in the one file the user names. Finds all usages first, shows a plan, applies to every file, then verifies nothing was missed. Use when asked to change a button style, badge color, form layout, or any visual pattern that may exist in multiple places — including when the user says they already fixed one occurrence by hand and wants the rest found.
 ---
 
 You are performing a safe, repo-wide UI update. Your job is to make sure the change is applied **everywhere** it needs to be — not just the one file the user mentioned.
