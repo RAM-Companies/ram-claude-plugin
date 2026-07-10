@@ -1,0 +1,14 @@
+{
+  "extraKnownMarketplaces": {
+    "ram-companies": {
+      "source": {
+        "source": "github",
+        "repo": "RAM-Companies/ram-claude-plugin"
+      },
+      "autoUpdate": true
+    }
+  },
+  "enabledPlugins": {
+    "ram@ram-companies": true
+  }
+}
