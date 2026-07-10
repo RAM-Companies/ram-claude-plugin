@@ -9,7 +9,7 @@ Update the `ram` plugin (this plugin, once installed in a consumer project) to t
 
 Look for an `extraKnownMarketplaces.ram-companies.autoUpdate` field set to `true` in the project's `.claude/settings.json` (this is what the `ram-claude-plugin` README's "Consumer project setup" section recommends). If it's already `true`:
 
-- Claude Code refreshes the marketplace and updates the installed plugin automatically at every startup — no manual command is required, for this update or future ones.
+- Claude Code refreshes the marketplace and updates the installed plugin automatically at every startup — no manual command is required, for this update or future ones. This assumes the plugin was actually installed at some point already; `autoUpdate` keeps an existing install current, it doesn't perform the initial install (see the caveats in `${CLAUDE_PLUGIN_ROOT}/README.md` on why the initial `enabledPlugins`-triggered install isn't reliable on its own — if `claude plugin list` shows the plugin isn't installed at all yet, that's the gap to fix, not this one).
 - Tell the user that once they (and their teammates, if project-scoped) pull the merged change and restart Claude Code, the update applies on its own.
 - Only run the manual commands below if the user wants the update to apply immediately, without waiting for the next startup.
 
@@ -32,7 +32,7 @@ Ask the user (if not already stated) whether the update should apply to just the
 - **`user`** (default) — updates the plugin for the current user only. Nothing shared, nothing committed.
 - **`project`** — writes `enabledPlugins`/`extraKnownMarketplaces` into the project's checked-in `.claude/settings.json`, so that anyone who opens the repo _from then on_ has the marketplace registered and the plugin enabled automatically.
 
-**Neither scope actually pushes the update to teammates' machines, unless `autoUpdate` is set (Step 1).** A plugin install/update always writes to the _current user's_ local `~/.claude` plugin cache — that part never leaves this machine, regardless of scope. Project scope only commits which plugin/marketplace _should_ be enabled; without `autoUpdate: true` on the marketplace entry, it doesn't and can't force anyone else's Claude Code to pull the new version — each teammate still has to, on their own machine, pull the branch/commit and run `claude plugin marketplace update ram-companies` themselves. If you're setting up project scope and `autoUpdate` isn't set yet, add `"autoUpdate": true` to the `extraKnownMarketplaces.ram-companies` entry while you're at it (see the README) — it closes this gap for every future update, not just this one.
+**Neither scope actually pushes the update to teammates' machines, unless `autoUpdate` is set (Step 1).** A plugin install/update always writes to the _current user's_ local `~/.claude` plugin cache — that part never leaves this machine, regardless of scope. Project scope only commits which plugin/marketplace _should_ be enabled; without `autoUpdate: true` on the marketplace entry, it doesn't and can't force anyone else's Claude Code to pull the new version — each teammate still has to, on their own machine, pull the branch/commit and run `claude plugin marketplace update ram-companies` themselves. If you're setting up project scope and `autoUpdate` isn't set yet, add `"autoUpdate": true` to the `extraKnownMarketplaces.ram-companies` entry while you're at it (see `${CLAUDE_PLUGIN_ROOT}/README.md`) — it closes this gap for every future update, not just this one.
 
 ## Step 4 — Update the plugin
 
