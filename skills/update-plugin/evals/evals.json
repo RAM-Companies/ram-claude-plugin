@@ -8,7 +8,7 @@
       "files": [],
       "expectations": [
         "Runs or instructs `claude plugin marketplace update ram-companies` before attempting the update",
-        "Asks whether to update at `user` or `project` scope before running the update, since the prompt doesn't specify",
+        "Either asks which scope (`user` or `project`) to update, or explicitly states which scope it's assuming and offers to switch — doesn't silently pick a scope without flagging the assumption, since the prompt doesn't specify",
         "Runs or instructs `claude plugin update ram@ram-companies` (with `--scope project` if that's the resolved scope)",
         "Suggests verifying the result with `claude plugin list`"
       ]
@@ -44,7 +44,8 @@
       "expectations": [
         "Reads .claude/settings.json and recognizes autoUpdate: true is already set for the ram-companies marketplace",
         "States that teammates will get the update automatically at their next Claude Code startup once they pull the merged change, without needing to run claude plugin marketplace update themselves",
-        "Offers the manual `claude plugin marketplace update`/`claude plugin update` commands only as an optional way to force the update immediately, not as a required step"
+        "Offers the manual `claude plugin marketplace update`/`claude plugin update` commands only as an optional way to force the update immediately, not as a required step",
+        "Notes that autoUpdate only takes effect once the version bump has actually reached the branch the marketplace tracks (main) — doesn't assume the merge already reached main just because the user said 'we merged the PR', since the prompt never states which branch"
       ]
     }
   ]

@@ -13,6 +13,8 @@ Look for an `extraKnownMarketplaces.ram-companies.autoUpdate` field set to `true
 - Tell the user that once they (and their teammates, if project-scoped) pull the merged change and restart Claude Code, the update applies on its own.
 - Only run the manual commands below if the user wants the update to apply immediately, without waiting for the next startup.
 
+Before telling the user "no action needed," confirm the version bump actually reached `main` — don't take "we merged the PR" at face value if the branch isn't stated. The marketplace source tracks this repo's default branch (`main`) specifically; a bump merged only to a feature branch, or still sitting in an open PR, is invisible to `autoUpdate` (and to a manual refresh) no matter how confidently the user describes it as done. If the branch isn't clear from what they said, check `.claude-plugin/plugin.json`'s `version` field on `main` directly, or ask.
+
 If `autoUpdate` isn't set — or there's no `extraKnownMarketplaces` entry for `ram-companies` at all — continue with the manual steps, and see Step 3 for adding it going forward.
 
 ## Step 2 — Refresh the marketplace catalog
