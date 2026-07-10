@@ -56,11 +56,11 @@ Running `claude plugin install` locally only configures your own machine — it 
 
 If the project doesn't have a `.claude/settings.json` yet, create it with just this content. If it already has one — for anything, not just RAM's own hooks — merge `extraKnownMarketplaces` and `enabledPlugins` in as additional top-level keys; don't replace the file. This repo's own [`.claude/settings.json`](.claude/settings.json) is a working example of `enabledPlugins` sitting alongside an unrelated `hooks` block.
 
-This does **not** reliably auto-install the plugin — declaring it in `settings.json` only makes Claude Code aware the project wants it. The [docs](https://code.claude.com/docs/en/discover-plugins) say trusting the folder "prompts them to install," but in practice this has been reported to silently do nothing beyond registering the marketplace — no install prompt fires, `enabledPlugins` is never acted on, and the plugin's skills stay unavailable ([anthropics/claude-code#32606](https://github.com/anthropics/claude-code/issues/32606)). It's also **only evaluated through the interactive trust dialog** — it does nothing in headless/print mode (`-p`), including in CI ([anthropics/claude-code#13097](https://github.com/anthropics/claude-code/issues/13097)). The CLAUDE.md snippet below closes both gaps by having Claude run the install commands itself the first time it's needed, instead of depending on a prompt that may never fire.
+This does **not** reliably auto-install the plugin — declaring it in `settings.json` only makes Claude Code aware the project wants it. The [docs](https://code.claude.com/docs/en/discover-plugins) say trusting the folder "prompts them to install," but in practice this has been reported to silently do nothing beyond registering the marketplace — no install prompt fires, `enabledPlugins` is never acted on, and the plugin's skills stay unavailable ([anthropics/claude-code#32606](https://github.com/anthropics/claude-code/issues/32606)). It's also **only evaluated through the interactive trust dialog** — it does nothing in headless/print mode (`-p`), including in CI ([anthropics/claude-code#13097](https://github.com/anthropics/claude-code/issues/13097)). The CLAUDE.md snippet below closes both gaps by having Claude proactively offer the install the first time it's needed (and run it with the user's go-ahead), instead of depending on a prompt that may never fire.
 
 Once installed, `autoUpdate: true` keeps that installation current without anyone manually running `claude plugin marketplace update` — third-party marketplaces default to auto-update off.
 
-Also add this to the project's own `CLAUDE.md`. This is what actually closes the install gap described above for non-technical teammates: instead of a human having to notice the "plugin not installed" message and copy the command themselves, Claude runs the install itself the first time it needs a RAM skill:
+Also add this to the project's own `CLAUDE.md`. This is what actually closes the install gap described above for non-technical teammates: instead of a human having to notice the "plugin not installed" message and copy the command themselves, Claude offers to install it the first time it needs a RAM skill, and runs the commands itself once the user agrees:
 
 ```markdown
 ## RAM Claude Plugin
@@ -69,9 +69,9 @@ This project uses the `ram@ram-companies` Claude Code plugin for shared skills (
 
 If a user describes something a RAM skill would normally handle (e.g. "review this codebase," "add a migration," "write tests for this function") and the matching skill isn't available or the `ram` plugin isn't installed:
 
-- Don't ask the user to run any command.
-- Run `claude plugin marketplace add RAM-Companies/ram-claude-plugin` and `claude plugin install ram@ram-companies` yourself, then continue with their original request.
-- Tell them briefly, in plain language, what you set up — not command syntax.
+- Don't just report the plugin as missing and stop — that leaves the user to notice the message and copy the command themselves, which is the exact gap this fallback exists to close.
+- Tell them in plain language what's missing and offer to install it (`claude plugin marketplace add RAM-Companies/ram-claude-plugin` and `claude plugin install ram@ram-companies`) — then, if they agree, run those commands yourself rather than making them type it.
+- This changes machine-wide Claude Code state, not just this project, so treat it like any other consequential action: propose it, don't do it silently.
 
 Don't rely on the user typing `/ram:<skill-name>` directly. If that skill doesn't resolve, the client rejects the slash command before it ever reaches you, so this fallback never gets a chance to run — it only helps when they describe what they want in plain English.
 ```
