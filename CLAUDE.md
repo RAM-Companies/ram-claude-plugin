@@ -416,7 +416,9 @@ These are caught by `claude plugin validate` or by reading the official docs:
 
 Reference: [Conventional Commits spec](https://www.conventionalcommits.org/en/v1.0.0/)
 
-RAM projects use the `/ram:git-workflow` skill to enforce these rules. The official `commit-commands` plugin (from the Anthropic marketplace) provides generic git scaffolding, but does not know RAM's branch naming, base branch (`dev`), or scope taxonomy — so the RAM skill is the authoritative source.
+RAM projects use the `/ram:git-workflow` skill to enforce these rules. The official `commit-commands` plugin (from the Anthropic marketplace) provides generic git scaffolding, but does not know RAM's branch naming, base branch, or scope taxonomy — so the RAM skill is the authoritative source.
+
+This repo (`ram-claude-plugin`) has no `dev` branch — only `main`. Branch from and target `main` here, unlike most RAM consumer projects (React/Supabase/Vercel apps), which do have a `dev` branch and are the intended target of the `/ram:git-workflow` skill's `dev`-based conventions described below.
 
 Install the companion plugin for generic git scaffolding (optional, user scope):
 
@@ -430,14 +432,14 @@ Pattern: `<type>/<short-description>` — lowercase, hyphen-separated, ≤5 word
 
 Valid types: `feat`, `fix`, `chore`, `refactor`, `docs`, `test`, `perf`.
 
-Always branch from `dev`, not `main`:
+In this repo, branch from `main` (there is no `dev`):
 
 ```bash
-git checkout dev && git pull origin dev
+git checkout main && git pull origin main
 git checkout -b feat/your-feature-name
 ```
 
-`main` is the production branch. Feature branches must target `dev`. PRs against `main` are for release merges only.
+In most RAM consumer projects, branch from `dev` instead — `main` there is the production branch, and PRs against it are for release merges only.
 
 ### Conventional commit format
 
@@ -469,7 +471,7 @@ BREAKING CHANGE: all references to `quotes` must be updated to `proposals`
 ### PR rules
 
 - Title follows the same conventional commit format as the first commit on the branch
-- Target branch is always `dev`
+- Target branch is `main` in this repo; `dev` in most RAM consumer projects
 - Include migration steps if there is a DB change; include a screenshot or Loom if there is a UI change
 - Do not self-merge without review (exception: `chore`/`docs` branches)
 
