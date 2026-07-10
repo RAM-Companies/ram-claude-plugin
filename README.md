@@ -109,10 +109,11 @@ Write 2-3 prompts per skill covering the common case plus at least one edge case
 
 ### Running the eval
 
-1. For each eval case, spawn two subagents in the same turn: one instructed to read the skill's `SKILL.md` and follow it (`with_skill`), one given the same prompt with no skill reference at all (`without_skill`, the baseline). Save each response under `skills/<skill-name>-workspace/iteration-1/<eval-name>/{with_skill,without_skill}/outputs/`.
-2. Grade each response against that eval's `expectations`, saving `grading.json` per run (see `skill-creator`'s `references/schemas.md` for the exact field names — the viewer depends on them matching exactly).
-3. Aggregate into `benchmark.json` at the iteration root (pass rates, timing, tokens per configuration).
-4. Generate the review page and open it as an artifact/static file:
+1. Before spawning any agent, copy that eval's `files` into per-run input folders: `skills/<skill-name>-workspace/iteration-1/<eval-name>/{with_skill,without_skill}/inputs/`. Point each agent at its own copy, never at the shared `skills/<skill-name>/evals/files/` originals — an agent that goes looking for "the project" on disk will find and edit whatever's in front of it, "please don't modify the original" is an instruction, not a permission boundary, and a stray edit to the shared fixture silently corrupts every other eval case that reuses it. (Not hypothetical: a baseline run once edited the shared `ui-update` fixtures in place instead of its output folder, requiring a manual restore before the results could be trusted.)
+2. For each eval case, spawn two subagents in the same turn: one instructed to read the skill's `SKILL.md` and follow it (`with_skill`), one given the same prompt with no skill reference at all (`without_skill`, the baseline). Point each at its own `inputs/` copy from step 1. Save each response under `skills/<skill-name>-workspace/iteration-1/<eval-name>/{with_skill,without_skill}/outputs/`.
+3. Grade each response against that eval's `expectations`, saving `grading.json` per run (see `skill-creator`'s `references/schemas.md` for the exact field names — the viewer depends on them matching exactly).
+4. Aggregate into `benchmark.json` at the iteration root (pass rates, timing, tokens per configuration).
+5. Generate the review page and open it as an artifact/static file:
 
    ```bash
    python <skill-creator-path>/eval-viewer/generate_review.py \

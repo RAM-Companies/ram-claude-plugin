@@ -1,0 +1,30 @@
+{
+  "skill_name": "deno-tests",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write unit tests for supabase/functions/sample-function/index.ts",
+      "expected_output": "Extracts banDurationFor and buildFullName into _lib.ts, updates index.ts to import from it, and writes index.test.ts covering happy paths and edge cases without mocking Supabase.",
+      "files": ["evals/files/sample-function/index.ts"],
+      "expectations": [
+        "Creates _lib.ts and moves banDurationFor and buildFullName into it with explicit types",
+        "Updates index.ts to import the extracted functions from ./_lib.ts instead of defining them inline",
+        "Does not attempt to extract or test the createClient/Deno.serve/req handling",
+        "Writes index.test.ts using Deno.test() and assertEquals from @std/assert, not a mocked Supabase client",
+        "Covers at least one boundary case for banDurationFor (e.g. strikeCount 0 or exactly 3) and a missing-name case for buildFullName",
+        "Test descriptions read as a sentence starting with the function name, e.g. \"banDurationFor: ...\""
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "This edge function only does HTTP plumbing and Supabase calls — is there anything worth unit testing in supabase/functions/sample-function/index.ts?",
+      "expected_output": "Correctly identifies banDurationFor and buildFullName as pure and worth testing, rather than either inventing fake coverage for the HTTP/Supabase parts or claiming there's nothing to test at all.",
+      "files": ["evals/files/sample-function/index.ts"],
+      "expectations": [
+        "Identifies banDurationFor and buildFullName specifically as pure, deterministic logic worth extracting and testing",
+        "Explicitly states that the Deno.serve handler and the Supabase query itself are out of scope for this skill, rather than trying to test them",
+        "Does not claim there is nothing worth testing in the file"
+      ]
+    }
+  ]
+}

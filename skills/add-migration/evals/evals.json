@@ -1,0 +1,32 @@
+{
+  "skill_name": "add-migration",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add a status column to the quotes table — text, default 'draft' — and index it so we can filter by status quickly.",
+      "expected_output": "A correctly-named idempotent migration, a matching pgTAP test, and a reminder to regenerate types.ts — following the existing project's RLS/GRANT pattern.",
+      "files": ["evals/files/existing-migration.sql"],
+      "expectations": [
+        "Chooses a snake_case migration name of 5 words or fewer describing the change (e.g. add_quote_status_column) without a timestamp prefix",
+        "Uses `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` and `CREATE INDEX IF NOT EXISTS` so the migration is idempotent",
+        "Does not include any INSERT/UPDATE/COPY data statements",
+        "Writes a pgTAP test file asserting the column and index exist (e.g. has_column, has_index)",
+        "Mentions regenerating src/integrations/supabase/types.ts and flags it must happen before merge if a token isn't available",
+        "States that the migration, test, and regenerated types must be committed together"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Create a new audit_log table. Only admins should be able to read it.",
+      "expected_output": "A new table with RLS enabled, an admin-only policy enforced server-side, correct GRANTs, and an idempotency-safe CREATE POLICY guard.",
+      "files": ["evals/files/existing-migration.sql"],
+      "expectations": [
+        "Enables ROW LEVEL SECURITY on the new table",
+        "Enforces the admin-only read via a server-side RLS policy or JWT claim check, not a client-side boolean",
+        "Includes GRANT SELECT ... TO authenticated and GRANT ALL ... TO service_role (not GRANT ... TO anon, since this data isn't meant to be public)",
+        "Since CREATE POLICY does not support IF NOT EXISTS, uses DROP POLICY IF EXISTS before recreating it (or an equivalent idempotency guard) rather than a bare CREATE POLICY",
+        "Writes a pgTAP test asserting the table and its RLS policy exist"
+      ]
+    }
+  ]
+}

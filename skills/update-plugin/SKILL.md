@@ -17,8 +17,10 @@ This pulls the latest commit from the default branch (`main`) so the local catal
 
 Ask the user (if not already stated) whether the update should apply to just them or the whole team:
 
-- **`user`** (default) — updates the plugin for the current user only.
-- **`project`** — pins the updated version in the project's `.claude/settings.json`, so everyone who opens the repo gets the same version.
+- **`user`** (default) — updates the plugin for the current user only. Nothing shared, nothing committed.
+- **`project`** — writes `enabledPlugins`/`extraKnownMarketplaces` into the project's checked-in `.claude/settings.json`, so that anyone who opens the repo _from then on_ has the marketplace registered and the plugin enabled automatically.
+
+**Neither scope actually pushes the update to teammates' machines.** A plugin install/update always writes to the _current user's_ local `~/.claude` plugin cache — that part never leaves this machine, regardless of scope. Project scope only commits which plugin/marketplace _should_ be enabled; it doesn't and can't force anyone else's Claude Code to pull the new version. Each teammate still has to, on their own machine: pull the branch/commit containing the `.claude/settings.json` change, then run `claude plugin marketplace update ram-companies` themselves (their local catalog won't refresh on its own). So "update it for the whole team" is really two separate things — get the config change committed and merged, _and_ tell the team to refresh — not one command that does both.
 
 ## Step 3 — Update the plugin
 
@@ -31,6 +33,8 @@ Add `--scope project` if Step 2 resolved to project scope:
 ```bash
 claude plugin update ram@ram-companies --scope project
 ```
+
+If this used project scope, the `.claude/settings.json` change still needs to be committed and pushed like any other change (branch, commit, PR — see `/ram:git-workflow`) before it reaches teammates at all. Once merged, tell the team to run `claude plugin marketplace update ram-companies` on their own machines — committing the config doesn't do that for them.
 
 ## Step 4 — Verify
 

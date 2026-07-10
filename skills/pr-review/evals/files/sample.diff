@@ -1,0 +1,47 @@
+diff --git a/src/pages/Billing.tsx b/src/pages/Billing.tsx
+index 1111111..2222222 100644
+--- a/src/pages/Billing.tsx
++++ b/src/pages/Billing.tsx
+@@ -1,10 +1,28 @@
+ import { useEffect, useState } from "react";
++import { supabase } from "@/integrations/supabase/client";
+
+ export function Billing() {
+   const [invoices, setInvoices] = useState([]);
++
++  useEffect(() => {
++    supabase
++      .from("invoices")
++      .select("*")
++      .then(({ data }) => setInvoices(data ?? []));
++  }, []);
++
++  function handleDelete(id: string) {
++    if (window.confirm("Delete this invoice?")) {
++      supabase.from("invoices").delete().eq("id", id);
++    }
++  }
+
+   return (
+     <div>
++      <div style={{ marginTop: "12px" }}>
++        {invoices.map((inv: any) => (
++          <div key={inv.id} onClick={() => handleDelete(inv.id)}>
++            {inv.total_cents}
++          </div>
++        ))}
++      </div>
+     </div>
+   );
+ }
+diff --git a/package.json b/package.json
+index 3333333..4444444 100644
+--- a/package.json
++++ b/package.json
+@@ -5,6 +5,7 @@
+   "scripts": {
+     "dev": "vite",
+     "build": "vite build",
++    "export-report": "node scripts/export-report.js"
+   }
+ }

@@ -21,7 +21,8 @@
       "expectations": [
         "Infers project scope from the 'whole team' phrasing instead of asking a redundant scope question",
         "Runs or instructs `claude plugin update ram@ram-companies --scope project`",
-        "Confirms the installed version now matches 1.6.0, e.g. via `claude plugin list`"
+        "Confirms the installed version now matches 1.6.0, e.g. via `claude plugin list`",
+        "Explains that project scope only commits config to git and does not push the update to teammates' machines — each teammate still needs to pull the change and run their own `claude plugin marketplace update` (or equivalent refresh) afterward"
       ]
     },
     {
