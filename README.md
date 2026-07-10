@@ -4,6 +4,8 @@ Shared Claude Code skills and hooks for RAM React / TypeScript / Supabase / Verc
 
 ## Install
 
+This is the personal, one-machine install path. It works the same way whether or not the repo you're in has a committed `.claude/settings.json` — it's an explicit command, not something that depends on trust-dialog auto-detection (see [Consumer project setup](#consumer-project-setup-recommended) below for why that distinction matters). Run it once per machine per person; it doesn't reach anyone else's setup.
+
 Add the RAM Companies marketplace:
 
 ```bash
@@ -29,9 +31,11 @@ copilot plugin install ram@ram-companies
 claude plugin marketplace update ram-companies
 ```
 
+This refreshes the marketplace catalog only — follow it with `claude plugin update ram@ram-companies` to actually pull the new version. This manual pair always works regardless of whether `autoUpdate` is set anywhere; use it any time you don't want to wait for the next automatic startup check, or to confirm an update actually landed. See `/ram:update-plugin`, which automates this end-to-end including the project-scope case.
+
 ## Consumer project setup (recommended)
 
-Running `claude plugin install` locally only configures your own machine — it doesn't reach any of your teammates', and each person has to repeat it themselves. For a team project, commit this to the project's own `.claude/settings.json` instead, so anyone who opens the repo — including non-technical teammates on Claude Desktop who never touch a CLI — gets prompted to install and stay updated automatically after accepting the workspace trust dialog:
+Running `claude plugin install` locally only configures your own machine — it doesn't reach any of your teammates', and each person has to repeat it themselves. For a team project, commit this to the project's own `.claude/settings.json` instead, so the plugin is declared for everyone who opens the repo:
 
 ```json
 {
@@ -50,14 +54,18 @@ Running `claude plugin install` locally only configures your own machine — it 
 }
 ```
 
-`autoUpdate: true` keeps everyone current without anyone manually running `claude plugin marketplace update` — third-party marketplaces default to auto-update off.
+If the project doesn't have a `.claude/settings.json` yet, create it with just this content. If it already has one — for anything, not just RAM's own hooks — merge `extraKnownMarketplaces` and `enabledPlugins` in as additional top-level keys; don't replace the file. This repo's own [`.claude/settings.json`](.claude/settings.json) is a working example of `enabledPlugins` sitting alongside an unrelated `hooks` block.
 
-Also add this to the project's own `CLAUDE.md`, so Claude can self-heal if the automatic install prompt doesn't fire for some reason (stale trust state, or a skill invoked before the marketplace entry was picked up):
+This does **not** reliably auto-install the plugin — declaring it in `settings.json` only makes Claude Code aware the project wants it. The [docs](https://code.claude.com/docs/en/discover-plugins) say trusting the folder "prompts them to install," but in practice this has been reported to silently do nothing beyond registering the marketplace — no install prompt fires, `enabledPlugins` is never acted on, and the plugin's skills stay unavailable ([anthropics/claude-code#32606](https://github.com/anthropics/claude-code/issues/32606)). It's also **only evaluated through the interactive trust dialog** — it does nothing in headless/print mode (`-p`), including in CI ([anthropics/claude-code#13097](https://github.com/anthropics/claude-code/issues/13097)). The CLAUDE.md snippet below closes both gaps by having Claude run the install commands itself the first time it's needed, instead of depending on a prompt that may never fire.
+
+Once installed, `autoUpdate: true` keeps that installation current without anyone manually running `claude plugin marketplace update` — third-party marketplaces default to auto-update off.
+
+Also add this to the project's own `CLAUDE.md`. This is what actually closes the install gap described above for non-technical teammates: instead of a human having to notice the "plugin not installed" message and copy the command themselves, Claude runs the install itself the first time it needs a RAM skill:
 
 ```markdown
 ## RAM Claude Plugin
 
-This project uses the `ram@ram-companies` Claude Code plugin for shared skills (`/ram:codebase-review`, `/ram:add-migration`, etc.) and hooks. It's declared in `.claude/settings.json` — Claude Code should prompt to install it automatically the first time someone trusts this project folder. No one should need to run install commands themselves.
+This project uses the `ram@ram-companies` Claude Code plugin for shared skills (`/ram:codebase-review`, `/ram:add-migration`, etc.) and hooks. It's declared in `.claude/settings.json`, but Claude Code does not auto-install a plugin from settings alone — it only reports the plugin as not installed and shows the install command. No one should need to notice that message or run install commands themselves.
 
 If a user describes something a RAM skill would normally handle (e.g. "review this codebase," "add a migration," "write tests for this function") and the matching skill isn't available or the `ram` plugin isn't installed:
 
@@ -68,10 +76,11 @@ If a user describes something a RAM skill would normally handle (e.g. "review th
 Don't rely on the user typing `/ram:<skill-name>` directly. If that skill doesn't resolve, the client rejects the slash command before it ever reaches you, so this fallback never gets a chance to run — it only helps when they describe what they want in plain English.
 ```
 
-Two caveats to know about before relying on this:
+Caveats to know about before relying on this:
 
-- **First-time install is one click-through per person, not zero.** Each teammate still has to accept the workspace trust dialog and the install prompt on their own machine the first time they open the project. This removes the need for a dev to configure everyone's machine — it doesn't remove the person's own one-time step.
-- **Claude Code Desktop has a filed bug** ([anthropics/claude-code#61782](https://github.com/anthropics/claude-code/issues/61782)) where the workspace trust dialog can silently fail to render, blocking the chat entirely with no prompt to accept. If someone hits this, the config above can't help — they'd need to trust that same repo once via another Claude Code surface (CLI or an IDE extension), since trust is stored per git repository root, not per surface.
+- **Each teammate still has one unavoidable one-time step**: accepting the workspace trust dialog on their own machine the first time they open the project. Nothing here removes that.
+- **`autoUpdate: true` only helps once the plugin is actually installed.** It keeps an existing install current at every startup — it does not perform the initial install, which is exactly the step the caveat above says isn't reliable. Someone (or Claude, via the CLAUDE.md fallback) still has to get the plugin installed once; `autoUpdate` takes it from there.
+- **Claude Code Desktop has a filed bug** ([anthropics/claude-code#61782](https://github.com/anthropics/claude-code/issues/61782)) where the workspace trust dialog can silently fail to render, blocking the chat entirely with no prompt to accept. If someone hits this, nothing above can help — they'd need to trust that same repo once via another Claude Code surface (CLI or an IDE extension), since trust is stored per git repository root, not per surface.
 
 ## Developing this plugin
 
