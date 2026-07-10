@@ -43,6 +43,44 @@ test("types.ts deny also matches Windows-style backslash paths", () => {
   assert.equal(out.hookSpecificOutput.permissionDecision, "deny");
 });
 
+test("editing Next.js-style database.types.ts is denied", () => {
+  const r = run({
+    tool_name: "Edit",
+    tool_input: { file_path: "lib/types/database.types.ts" }
+  });
+  const out = JSON.parse(r.stdout);
+  assert.equal(out.hookSpecificOutput.permissionDecision, "deny", r.stdout);
+  assert.match(out.hookSpecificOutput.permissionDecisionReason, /auto-generated/);
+  assert.match(out.hookSpecificOutput.permissionDecisionReason, /lib\/types\/database\.types\.ts/);
+});
+
+test("database.types.ts is denied regardless of directory nesting", () => {
+  const r = run({
+    tool_name: "Write",
+    tool_input: { file_path: "src/types/database.types.ts" }
+  });
+  const out = JSON.parse(r.stdout);
+  assert.equal(out.hookSpecificOutput.permissionDecision, "deny");
+});
+
+test("a non-integrations supabase/types.ts path is still denied", () => {
+  const r = run({
+    tool_name: "Edit",
+    tool_input: { file_path: "src/lib/supabase/types.ts" }
+  });
+  const out = JSON.parse(r.stdout);
+  assert.equal(out.hookSpecificOutput.permissionDecision, "deny");
+});
+
+test("an unrelated top-level types.ts is not treated as generated", () => {
+  const r = run({
+    tool_name: "Edit",
+    tool_input: { file_path: "src/types.ts" }
+  });
+  assert.equal(r.status, 0);
+  assert.equal(r.stdout, "");
+});
+
 test("editing an existing migration file asks for confirmation", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "ram-hook-test-"));
   const migrationDir = path.join(dir, "supabase", "migrations");
