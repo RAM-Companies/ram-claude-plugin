@@ -5,7 +5,19 @@ description: Update the installed ram plugin to the latest published version fro
 
 Update the `ram` plugin (this plugin, once installed in a consumer project) to the newest version published on the `ram-companies` marketplace.
 
-## Step 1 — Refresh the marketplace catalog
+## Step 1 — Check whether autoUpdate is already handling this
+
+Look for an `extraKnownMarketplaces.ram-companies.autoUpdate` field set to `true` in the project's `.claude/settings.json` (this is what the `ram-claude-plugin` README's "Consumer project setup" section recommends). If it's already `true`:
+
+- Claude Code refreshes the marketplace and updates the installed plugin automatically at every startup — no manual command is required, for this update or future ones.
+- Tell the user that once they (and their teammates, if project-scoped) pull the merged change and restart Claude Code, the update applies on its own.
+- Only run the manual commands below if the user wants the update to apply immediately, without waiting for the next startup.
+
+Before telling the user "no action needed," confirm the version bump actually reached `main` — don't take "we merged the PR" at face value if the branch isn't stated. The marketplace source tracks this repo's default branch (`main`) specifically; a bump merged only to a feature branch, or still sitting in an open PR, is invisible to `autoUpdate` (and to a manual refresh) no matter how confidently the user describes it as done. If the branch isn't clear from what they said, check `.claude-plugin/plugin.json`'s `version` field on `main` directly, or ask.
+
+If `autoUpdate` isn't set — or there's no `extraKnownMarketplaces` entry for `ram-companies` at all — continue with the manual steps, and see Step 3 for adding it going forward.
+
+## Step 2 — Refresh the marketplace catalog
 
 ```bash
 claude plugin marketplace update ram-companies
@@ -13,38 +25,38 @@ claude plugin marketplace update ram-companies
 
 This pulls the latest commit from the default branch (`main`) so the local catalog knows about any version bump in `plugin.json`.
 
-## Step 2 — Determine scope
+## Step 3 — Determine scope
 
 Ask the user (if not already stated) whether the update should apply to just them or the whole team:
 
 - **`user`** (default) — updates the plugin for the current user only. Nothing shared, nothing committed.
 - **`project`** — writes `enabledPlugins`/`extraKnownMarketplaces` into the project's checked-in `.claude/settings.json`, so that anyone who opens the repo _from then on_ has the marketplace registered and the plugin enabled automatically.
 
-**Neither scope actually pushes the update to teammates' machines.** A plugin install/update always writes to the _current user's_ local `~/.claude` plugin cache — that part never leaves this machine, regardless of scope. Project scope only commits which plugin/marketplace _should_ be enabled; it doesn't and can't force anyone else's Claude Code to pull the new version. Each teammate still has to, on their own machine: pull the branch/commit containing the `.claude/settings.json` change, then run `claude plugin marketplace update ram-companies` themselves (their local catalog won't refresh on its own). So "update it for the whole team" is really two separate things — get the config change committed and merged, _and_ tell the team to refresh — not one command that does both.
+**Neither scope actually pushes the update to teammates' machines, unless `autoUpdate` is set (Step 1).** A plugin install/update always writes to the _current user's_ local `~/.claude` plugin cache — that part never leaves this machine, regardless of scope. Project scope only commits which plugin/marketplace _should_ be enabled; without `autoUpdate: true` on the marketplace entry, it doesn't and can't force anyone else's Claude Code to pull the new version — each teammate still has to, on their own machine, pull the branch/commit and run `claude plugin marketplace update ram-companies` themselves. If you're setting up project scope and `autoUpdate` isn't set yet, add `"autoUpdate": true` to the `extraKnownMarketplaces.ram-companies` entry while you're at it (see the README) — it closes this gap for every future update, not just this one.
 
-## Step 3 — Update the plugin
+## Step 4 — Update the plugin
 
 ```bash
 claude plugin update ram@ram-companies
 ```
 
-Add `--scope project` if Step 2 resolved to project scope:
+Add `--scope project` if Step 3 resolved to project scope:
 
 ```bash
 claude plugin update ram@ram-companies --scope project
 ```
 
-If this used project scope, the `.claude/settings.json` change still needs to be committed and pushed like any other change (branch, commit, PR — see `/ram:git-workflow`) before it reaches teammates at all. Once merged, tell the team to run `claude plugin marketplace update ram-companies` on their own machines — committing the config doesn't do that for them.
+If this used project scope, the `.claude/settings.json` change still needs to be committed and pushed like any other change (branch, commit, PR — see `/ram:git-workflow`) before it reaches teammates at all. Once merged: if `autoUpdate` is set, teammates get it automatically at their next startup; otherwise, tell them to run `claude plugin marketplace update ram-companies` on their own machines — committing the config alone doesn't do that for them.
 
-## Step 4 — Verify
+## Step 5 — Verify
 
 ```bash
 claude plugin list
 ```
 
-Confirm the `ram` entry's version matches the current `version` field in this repo's `.claude-plugin/plugin.json` on `main`. If it doesn't, the marketplace catalog may not have refreshed yet — re-run Step 1.
+Confirm the `ram` entry's version matches the current `version` field in this repo's `.claude-plugin/plugin.json` on `main`. If it doesn't, the marketplace catalog may not have refreshed yet — re-run Step 2.
 
-## Step 5 — Reload if mid-session
+## Step 6 — Reload if mid-session
 
 If the user is running this inside an active session that already has the plugin loaded:
 

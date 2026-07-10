@@ -29,6 +29,50 @@ copilot plugin install ram@ram-companies
 claude plugin marketplace update ram-companies
 ```
 
+## Consumer project setup (recommended)
+
+Running `claude plugin install` locally only configures your own machine — it doesn't reach any of your teammates', and each person has to repeat it themselves. For a team project, commit this to the project's own `.claude/settings.json` instead, so anyone who opens the repo — including non-technical teammates on Claude Desktop who never touch a CLI — gets prompted to install and stay updated automatically after accepting the workspace trust dialog:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "ram-companies": {
+      "source": {
+        "source": "github",
+        "repo": "RAM-Companies/ram-claude-plugin"
+      },
+      "autoUpdate": true
+    }
+  },
+  "enabledPlugins": {
+    "ram@ram-companies": true
+  }
+}
+```
+
+`autoUpdate: true` keeps everyone current without anyone manually running `claude plugin marketplace update` — third-party marketplaces default to auto-update off.
+
+Also add this to the project's own `CLAUDE.md`, so Claude can self-heal if the automatic install prompt doesn't fire for some reason (stale trust state, or a skill invoked before the marketplace entry was picked up):
+
+```markdown
+## RAM Claude Plugin
+
+This project uses the `ram@ram-companies` Claude Code plugin for shared skills (`/ram:codebase-review`, `/ram:add-migration`, etc.) and hooks. It's declared in `.claude/settings.json` — Claude Code should prompt to install it automatically the first time someone trusts this project folder. No one should need to run install commands themselves.
+
+If a user describes something a RAM skill would normally handle (e.g. "review this codebase," "add a migration," "write tests for this function") and the matching skill isn't available or the `ram` plugin isn't installed:
+
+- Don't ask the user to run any command.
+- Run `claude plugin marketplace add RAM-Companies/ram-claude-plugin` and `claude plugin install ram@ram-companies` yourself, then continue with their original request.
+- Tell them briefly, in plain language, what you set up — not command syntax.
+
+Don't rely on the user typing `/ram:<skill-name>` directly. If that skill doesn't resolve, the client rejects the slash command before it ever reaches you, so this fallback never gets a chance to run — it only helps when they describe what they want in plain English.
+```
+
+Two caveats to know about before relying on this:
+
+- **First-time install is one click-through per person, not zero.** Each teammate still has to accept the workspace trust dialog and the install prompt on their own machine the first time they open the project. This removes the need for a dev to configure everyone's machine — it doesn't remove the person's own one-time step.
+- **Claude Code Desktop has a filed bug** ([anthropics/claude-code#61782](https://github.com/anthropics/claude-code/issues/61782)) where the workspace trust dialog can silently fail to render, blocking the chat entirely with no prompt to accept. If someone hits this, the config above can't help — they'd need to trust that same repo once via another Claude Code surface (CLI or an IDE extension), since trust is stored per git repository root, not per surface.
+
 ## Developing this plugin
 
 To try a skill from this repo before it's released, load it unreleased with:
