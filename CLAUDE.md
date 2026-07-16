@@ -33,13 +33,14 @@ ram-claude-plugin/
 │   ├── hooks.json           # Hook configuration (event → handler mapping)
 │   ├── protect-generated.js # PreToolUse: block edits to auto-gen files
 │   ├── format.js            # PostToolUse: ESLint + Prettier
-│   ├── post-write-checks.js # PostToolUse: code quality + secret scan
-│   └── stop-check.js        # Stop: tsc + npm test
+│   └── post-write-checks.js # PostToolUse: code quality + secret scan
 ├── tests/                   # node:test suite for the hook scripts
 └── README.md
 ```
 
-`.claude/settings.json` wires this repo's own `hooks/*.js` scripts up via `${CLAUDE_PROJECT_DIR}` so working on this plugin exercises the same hooks a consumer project gets — most usefully, `stop-check.js` runs `npm test` (the hook test suite) at the end of every session in this repo. It intentionally duplicates the four hook entries from `hooks/hooks.json` (which uses `${CLAUDE_PLUGIN_ROOT}`, only resolved when the plugin is actually installed) rather than self-installing via a local marketplace path — marketplace-installed plugins are copied into `~/.claude/plugins/cache`, so hook script edits wouldn't take effect without a reinstall. Keep both files in sync when adding or changing a hook.
+There is no `Stop` hook — Stop hooks run outside the conversation and can't explain a failure in context, so type-checking and tests are run instead via the `/ram:verify-build` skill (see `skills/verify-build/SKILL.md`), which Claude is expected to invoke before reporting a task done.
+
+`.claude/settings.json` wires this repo's own `hooks/*.js` scripts up via `${CLAUDE_PROJECT_DIR}` so working on this plugin exercises the same hooks a consumer project gets. It intentionally duplicates the hook entries from `hooks/hooks.json` (which uses `${CLAUDE_PLUGIN_ROOT}`, only resolved when the plugin is actually installed) rather than self-installing via a local marketplace path — marketplace-installed plugins are copied into `~/.claude/plugins/cache`, so hook script edits wouldn't take effect without a reinstall. Keep both files in sync when adding or changing a hook.
 
 **Rules enforced by the official spec:**
 
@@ -260,10 +261,9 @@ Default timeout for command hooks is 600 seconds. Set shorter timeouts for hooks
 ```json
 { "timeout": 10 }
 { "timeout": 30 }
-{ "timeout": 120 }
 ```
 
-Respectively: `protect-generated.js` (fast path check), `format.js` (ESLint + Prettier), `stop-check.js` (tsc + npm test). `Stop` hooks with long timeouts are fine — they run after Claude finishes, not during tool calls.
+Respectively: `protect-generated.js` (fast path check), `format.js` (ESLint + Prettier).
 
 ### Hook script guidelines
 
@@ -321,7 +321,7 @@ echo '{"hook_event_name":"PostToolUse","tool_name":"Write","tool_input":{"file_p
 
 ### Automated hook tests
 
-`tests/*.test.js` covers all four hook scripts using Node's built-in test runner (no dependencies). They spawn each hook as a real child process with controlled stdin and a stubbed `npx`/`npm` on `PATH` (`tests/helpers/`), so they exercise actual exit-code/stdout behavior — including the failure modes that tend to go unnoticed when this plugin runs inside someone else's project (malformed stdin, ESLint/Prettier/tsc missing or misbehaving, timeouts).
+`tests/*.test.js` covers all hook scripts using Node's built-in test runner (no dependencies). They spawn each hook as a real child process with controlled stdin and a stubbed `npx`/`npm` on `PATH` (`tests/helpers/`), so they exercise actual exit-code/stdout behavior — including the failure modes that tend to go unnoticed when this plugin runs inside someone else's project (malformed stdin, ESLint/Prettier/tsc missing or misbehaving, timeouts).
 
 ```bash
 npm test

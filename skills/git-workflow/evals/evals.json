@@ -11,7 +11,7 @@
         "Stages specific files by name rather than `git add .` or `git add -A`",
         "Composes a conventional commit message in the form `feat(<scope>): <description>` with a lowercase, imperative, no-trailing-period description",
         "States the PR should target `dev`, not `main`",
-        "Reminds that stop-check.js will run tsc/tests at session end before pushing"
+        "Mentions running the verify-build skill (tsc/tests) before pushing"
       ]
     },
     {
