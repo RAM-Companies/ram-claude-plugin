@@ -134,7 +134,7 @@ BREAKING CHANGE: all references to `quotes` must be updated to `proposals`
    git commit -m "feat(scope): description"
    ```
 
-5. After committing, remind the user that `stop-check.js` will run `tsc --noEmit` and `npm test` at session end — fix any failures before pushing.
+5. Before pushing, run the `/ram:verify-build` skill (`tsc --noEmit` + `npm test`) and fix any failures it surfaces.
 
 ## Step-by-step: opening a PR
 
