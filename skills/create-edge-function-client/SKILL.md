@@ -36,9 +36,9 @@ Check the consuming project for an existing generated-types script convention fi
 openapi-typescript <spec-url-or-path> -o <output-path>/api-types.ts
 ```
 
-Run it once now to produce the types file. Regeneration is manual — re-run this script whenever the source function's spec changes. This skill doesn't wire it into a watch task or CI step unless the user asks for that.
-
 Before picking `<output-path>`, check whether the project already has an API-client folder convention (grep for prior generated types or fetch wrappers). Reuse that location; don't invent a new structure if one exists.
+
+**Check before running codegen, not after.** If a types file (or the client wrapper from Step 5) already exists at that location — from a previous run of this skill, or committed some other way — don't silently overwrite it and don't silently leave it alone either. Tell the user it's already there and ask whether to regenerate (the spec may have changed since it was last generated) or leave it as-is. Only run the codegen command once that's settled. Regeneration is manual either way — re-run this script whenever the source function's spec changes. This skill doesn't wire it into a watch task or CI step unless the user asks for that.
 
 ## Step 5 — Build the thin client wrapper
 
