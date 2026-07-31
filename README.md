@@ -96,23 +96,25 @@ then invoke it as `/ram:<skill-name>` and run `/reload-plugins` after edits to p
 
 ## Skills
 
-| Skill               | Invoke                   | Purpose                                                                                   |
-| ------------------- | ------------------------ | ----------------------------------------------------------------------------------------- |
-| `add-migration`     | `/ram:add-migration`     | Create a Supabase migration (DDL + pgTAP tests + type regen)                              |
-| `codebase-review`   | `/ram:codebase-review`   | Full-codebase audit: security, performance, best practices (for vibe-coded apps)          |
-| `deno-tests`        | `/ram:deno-tests`        | Add unit tests to a Supabase Edge Function                                                |
-| `extract-component` | `/ram:extract-component` | Pull a section out of a large file into a standalone component                            |
-| `extract-service`   | `/ram:extract-service`   | Move inline Supabase queries into a service layer                                         |
-| `find-usages`       | `/ram:find-usages`       | Find every file that uses a component, function, or class string                          |
-| `git-workflow`      | `/ram:git-workflow`      | Create a feature branch, write a conventional commit, and open a PR against `dev`         |
-| `new-feature`       | `/ram:new-feature`       | Scaffold a new feature folder following feature-based architecture                        |
-| `pr-review`         | `/ram:pr-review`         | Full PR review: conventions, security, code quality, docs accuracy                        |
-| `setup-env-local`   | `/ram:setup-env-local`   | Write VITE_SUPABASE_ANON_KEY to .env.local for local Supabase development                 |
-| `setup-formatting`  | `/ram:setup-formatting`  | Set up Prettier, ESLint auto-fix, EditorConfig, and VS Code format-on-save                |
-| `ui-update`         | `/ram:ui-update`         | Safely apply a UI change everywhere it appears across the repo                            |
-| `unit-tests`        | `/ram:unit-tests`        | Write Vitest unit tests for pure functions in src/                                        |
-| `update-plugin`     | `/ram:update-plugin`     | Update the installed ram plugin to the latest marketplace version                         |
-| `verify-build`      | `/ram:verify-build`      | Run `tsc --noEmit` + `npm test` before reporting a task done, committing, or opening a PR |
+| Skill                  | Invoke                      | Purpose                                                                                      |
+| ---------------------- | --------------------------- | -------------------------------------------------------------------------------------------- |
+| `add-migration`        | `/ram:add-migration`        | Create a Supabase migration (DDL + pgTAP tests + type regen)                                 |
+| `codebase-review`      | `/ram:codebase-review`      | Full-codebase audit: security, performance, best practices (for vibe-coded apps)             |
+| `create-edge-function` | `/ram:create-edge-function` | Scaffold a new Supabase Edge Function with CORS, auth model, and testable logic split out    |
+| `deno-tests`           | `/ram:deno-tests`           | Add unit tests to a Supabase Edge Function                                                   |
+| `extract-component`    | `/ram:extract-component`    | Pull a section out of a large file into a standalone component                               |
+| `extract-service`      | `/ram:extract-service`      | Move inline Supabase queries into a service layer                                            |
+| `find-usages`          | `/ram:find-usages`          | Find every file that uses a component, function, or class string                             |
+| `git-workflow`         | `/ram:git-workflow`         | Create a feature branch, write a conventional commit, and open a PR against `dev`            |
+| `new-feature`          | `/ram:new-feature`          | Scaffold a new feature folder following feature-based architecture                           |
+| `pr-review`            | `/ram:pr-review`            | Full PR review: conventions, security, code quality, docs accuracy                           |
+| `review-edge-function` | `/ram:review-edge-function` | Audit an existing Supabase Edge Function for auth, CORS, data access, and testability issues |
+| `setup-env-local`      | `/ram:setup-env-local`      | Write VITE_SUPABASE_ANON_KEY to .env.local for local Supabase development                    |
+| `setup-formatting`     | `/ram:setup-formatting`     | Set up Prettier, ESLint auto-fix, EditorConfig, and VS Code format-on-save                   |
+| `ui-update`            | `/ram:ui-update`            | Safely apply a UI change everywhere it appears across the repo                               |
+| `unit-tests`           | `/ram:unit-tests`           | Write Vitest unit tests for pure functions in src/                                           |
+| `update-plugin`        | `/ram:update-plugin`        | Update the installed ram plugin to the latest marketplace version                            |
+| `verify-build`         | `/ram:verify-build`         | Run `tsc --noEmit` + `npm test` before reporting a task done, committing, or opening a PR    |
 
 ## Hooks
 

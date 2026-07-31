@@ -1,0 +1,10 @@
+{
+  "skill_name": "review-edge-function",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Review supabase/functions/create-quote-from-mac/index.ts for security and convention issues.",
+      "expected_output": "A findings report, one line per finding in the form <file>:<line> - SEVERITY - problem. fix., covering auth (shared secret verified before any data access), CORS (OPTIONS handled, headers on error paths too, and the shared cors.ts helper's own wildcard-fallback branch traced rather than assumed safe), data access (no SELECT *, untyped Supabase client flagged since a generated Database type exists), validation (validatePayload's hand-rolled shape checking noted alongside its own documented rationale for avoiding zod, and that zod isn't in supabase/functions/deno.json's import map regardless — not a fresh 'switch to zod' recommendation that ignores both), error handling (no swallowed errors, no raw error text leaked to the caller), documentation (missing doc comment on the densest business-logic function), and testability (logic split into _lib.ts, tests don't mock the Supabase client). No rewriting of the function, no praise, no vague findings."
+    }
+  ]
+}
