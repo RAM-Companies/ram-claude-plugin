@@ -1,0 +1,55 @@
+{
+  "skill_name": "create-edge-function-client",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Generate a client so our React frontend can call the export-quote-pdf Edge Function. It's already built on Hono + zod-openapi.",
+      "expected_output": "Fetches the function's OpenAPI spec, adds openapi-typescript and openapi-fetch to the frontend's package.json, generates a types file into an existing (or newly picked) API-client location, builds a thin openapi-fetch client wrapper whose middleware pulls the current Supabase session JWT per request, and commits both the generated types and the wrapper.",
+      "files": [],
+      "expectations": [
+        "Identifies the consumer as the browser frontend and the auth model as a Supabase session JWT before generating anything",
+        "Fetches the OpenAPI spec from the function's spec route (local dev server or deployed URL)",
+        "Adds openapi-typescript and openapi-fetch to the frontend's package.json, not the target function's deno.json",
+        "Checks for an existing API-client folder convention before picking an output path",
+        "Generated client's fetch middleware pulls the Supabase session JWT per request rather than caching it once",
+        "States that both the generated types file and the client wrapper get committed, not gitignored"
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "The generate-invoice function needs to call export-quote-pdf directly, server-to-server. export-quote-pdf already verifies a shared secret from an env var. Generate a client for this.",
+      "expected_output": "Identifies generate-invoice (another Edge Function) as the consumer with shared-secret auth, adds openapi-fetch as an npm: specifier to generate-invoice's own supabase/functions/deno.json (not export-quote-pdf's), keeps openapi-typescript as a dev-time-only Node/npm step whose output is portable into Deno, and builds a client whose middleware reads the shared secret from an environment variable and sets it on the header export-quote-pdf's handler checks.",
+      "files": [],
+      "expectations": [
+        "Identifies the consumer as another Edge Function with shared-secret (not Supabase-session) auth",
+        "Adds openapi-fetch as an npm: specifier to generate-invoice's deno.json import map, not export-quote-pdf's",
+        "Treats openapi-typescript as a dev-time-only generator whose plain .ts output is portable into Deno, without trying to run the generator itself inside Deno",
+        "Client middleware reads the shared secret from an environment variable (Deno.env.get or equivalent) and sets it on the header the target handler checks",
+        "Does not apply a constant-time comparison in the client — that requirement is called out as belonging to the receiving handler, not the caller"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Regenerate the client for export-quote-pdf — I think the response shape changed. There's already a generated types file and client wrapper from before.",
+      "expected_output": "Notices the existing generated types file and client wrapper, tells the user they already exist, and asks whether to regenerate before overwriting anything — doesn't silently skip since the user just said the spec changed, and doesn't silently overwrite without flagging that a file is being replaced.",
+      "files": [],
+      "expectations": [
+        "Detects that a types file and/or client wrapper already exists at the expected output location before running codegen",
+        "Surfaces to the user that existing generated output was found rather than silently overwriting or silently leaving it alone",
+        "Asks (or confirms via the prompt's own stated intent) whether to regenerate, given the user already indicated the spec changed",
+        "Proceeds to regenerate only after that's settled, not automatically on detecting existing files"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Generate a client for the legacy-webhook function so another service can call it.",
+      "expected_output": "Checks whether legacy-webhook is built on Hono + zod-openapi; if it's still raw Deno.serve with no OpenAPI spec, stops and recommends moving it to Hono + zod-openapi via the create-edge-function skill first, rather than hand-typing a response shape from the handler code.",
+      "files": [],
+      "expectations": [
+        "Checks whether the target function actually serves an OpenAPI spec before attempting to generate anything",
+        "If no spec exists, stops and recommends the create-edge-function skill's Hono + zod-openapi step rather than proceeding",
+        "Does not hand-type a response shape by reading the handler's code as a substitute for a real spec"
+      ]
+    }
+  ]
+}
