@@ -5,19 +5,21 @@ description: Scaffold a new Supabase Edge Function (a Deno-based HTTP endpoint) 
 
 Scaffold a new Supabase Edge Function. Every step below matters — auth model and CORS are the two most common places a new function ships broken or insecure, and untestable logic is the most common place it ships buggy.
 
-## Step 1 — Learn the project's *structure*, but don't trust its *judgment calls*
+## Step 1 — Learn the project's _structure_, but don't trust its _judgment calls_
 
 Before writing anything, read 2-3 existing functions under `supabase/functions/` (if any exist) to learn the project's shape:
+
 - A shared helpers folder (commonly `_shared/`) — CORS, auth extraction, and other cross-function utilities usually live there. Reuse them; don't re-implement.
 - Whether logic is split into a `_lib.ts` alongside `index.ts`.
 - The test file naming and test runner in use.
 - The `config.toml` pattern for registering functions.
 
-That's the part safe to copy — it's organizational, not a security or correctness decision. What's *not* safe to copy without checking: whatever the closest existing function does for secret comparison, error responses, input validation, or anything else that could be a live bug. An existing function is an example of house style, not a verified-correct reference implementation — it was written by the same fallible process you're running now, and it may already contain exactly the kind of issue `review-edge-function` is designed to catch (constant-time secret comparison, internal error details leaking to the caller, missing bounds checks, and so on). If the pattern you're about to reuse handles a secret, an error response, or a trust boundary, verify it independently against the steps below before copying it — don't paste it in just because "that's what the last function did." If this is the first function in the project, follow the patterns below directly.
+That's the part safe to copy — it's organizational, not a security or correctness decision. What's _not_ safe to copy without checking: whatever the closest existing function does for secret comparison, error responses, input validation, or anything else that could be a live bug. An existing function is an example of house style, not a verified-correct reference implementation — it was written by the same fallible process you're running now, and it may already contain exactly the kind of issue `review-edge-function` is designed to catch (constant-time secret comparison, internal error details leaking to the caller, missing bounds checks, and so on). If the pattern you're about to reuse handles a secret, an error response, or a trust boundary, verify it independently against the steps below before copying it — don't paste it in just because "that's what the last function did." If this is the first function in the project, follow the patterns below directly.
 
 ## Step 2 — Clarify the auth model before anything else
 
 Ask if not already stated: **who calls this function?**
+
 - A logged-in user's browser, holding a Supabase session JWT?
 - Another server/service, with no user session (shared secret, signature, or API key)?
 - Fully public, no auth at all?
@@ -37,7 +39,7 @@ After building the function, grep `supabase/functions/` for sibling functions se
 
 ## Step 4 — Set gateway-level auth in config.toml
 
-Supabase's function gateway checks the caller's JWT *before* your code runs — this is the platform default (`verify_jwt = true`) and it rejects unauthenticated callers ahead of the handler, similar to a platform-level `[Authorize]` filter that runs before any controller code. Every function typically needs an entry in `config.toml` even with no overrides, since some deployment flows (e.g. preview/branch environments) key off that registration.
+Supabase's function gateway checks the caller's JWT _before_ your code runs — this is the platform default (`verify_jwt = true`) and it rejects unauthenticated callers ahead of the handler, similar to a platform-level `[Authorize]` filter that runs before any controller code. Every function typically needs an entry in `config.toml` even with no overrides, since some deployment flows (e.g. preview/branch environments) key off that registration.
 
 - User-JWT-called functions: leave the default (`verify_jwt = true`, no override needed).
 - True server-to-server calls: set `verify_jwt = false` **only when the handler itself verifies a shared secret or signature**, as the first thing it does. Compare the secret with a constant-time comparison, not `!==`/`===` — a naive string comparison leaks timing information a partner's server could use to guess the secret byte-by-byte. Add an inline comment explaining why the gateway check is bypassed — an unexplained `verify_jwt = false` is exactly the kind of thing that gets copy-pasted into a function where it doesn't belong.
@@ -45,6 +47,7 @@ Supabase's function gateway checks the caller's JWT *before* your code runs — 
 ## Step 5 — Handle CORS if a browser calls this
 
 Any function called directly from a browser needs CORS handled, regardless of which framework you picked in Step 3:
+
 - Respond to the `OPTIONS` preflight request before any auth or business logic runs. (Hono's `cors()` middleware does this for you; with raw `Deno.serve` you do it explicitly.)
 - Reflect the request's `Origin` header back when it's on an allowlist — browsers reject `*` for credentialed requests, so a blanket wildcard silently breaks those callers.
 - Include the same CORS headers on **every** response, success and error alike. A CORS header missing only on the error path is the single most common CORS bug — the browser hides the real error behind an opaque CORS failure.
@@ -54,8 +57,9 @@ Reuse the project's existing CORS helper or its allowlist logic if there is one,
 ## Step 6 — Split the handler from the logic
 
 Two files, not one:
+
 - **`index.ts`** — the thin HTTP layer: a `Deno.serve` callback, or Hono route handlers if you're on Hono. Parses the request, calls into the logic below, shapes the response. No business logic lives here.
-- **`_lib.ts`** — pure functions: validation, parsing, calculations, branching decisions. Plain values in, plain values out. No Supabase client, no `fetch`, no I/O of any kind — that constraint is exactly what makes this file unit-testable without mocks. On Hono + zod-openapi, the Zod route schemas cover request *shape* validation; anything beyond shape (business rules, cross-field checks) still belongs in `_lib.ts`. On raw `Deno.serve`, define the request shape as a `zod` schema in `_lib.ts` too rather than hand-rolling type/shape checks — a schema you declare once is cheaper to read and maintain than a chain of manual `typeof`/`isObj` checks, and it's what `review-edge-function` will flag if you skip it. Add `zod` to `supabase/functions/deno.json`'s `imports` map (`npm:zod@<version>`) if it isn't already there.
+- **`_lib.ts`** — pure functions: validation, parsing, calculations, branching decisions. Plain values in, plain values out. No Supabase client, no `fetch`, no I/O of any kind — that constraint is exactly what makes this file unit-testable without mocks. On Hono + zod-openapi, the Zod route schemas cover request _shape_ validation; anything beyond shape (business rules, cross-field checks) still belongs in `_lib.ts`. On raw `Deno.serve`, define the request shape as a `zod` schema in `_lib.ts` too rather than hand-rolling type/shape checks — a schema you declare once is cheaper to read and maintain than a chain of manual `typeof`/`isObj` checks, and it's what `review-edge-function` will flag if you skip it. Add `zod` to `supabase/functions/deno.json`'s `imports` map (`npm:zod@<version>`) if it isn't already there.
 
 If the handler needs the caller's identity, extract the token from the `Authorization` header and pass it to `auth.getUser(token)` using a **service-role** client. Don't stand up a second client with the anon key just to read who's calling — one privileged client, used deliberately, is simpler to reason about than two clients with different trust levels.
 
@@ -84,6 +88,17 @@ Apply the `review-edge-function` skill's full checklist — Auth, CORS, Data acc
 You already have everything the checklist needs from writing the function: don't re-read `index.ts`/`_lib.ts`/`config.toml` from disk as if seeing them fresh, and don't re-ask whether this function is external-facing — you answered that in Step 3. Just walk the checklist against what you already know and wrote.
 
 If any finding it surfaces traces back to something you copied from an existing function rather than a deliberate decision, that's the signal to go verify it now rather than ship it.
+
+Any CRITICAL or WARNING finding the audit surfaces — copied or not — gets fixed before you call the function done. Reporting it and moving on is `review-edge-function`'s job when auditing someone else's function after the fact; here, you just wrote it, so an unresolved CRITICAL/WARNING finding means the function isn't finished yet.
+
+## Commit checklist
+
+- [ ] `index.ts` and `_lib.ts` (or the Hono route + `_lib.ts` split)
+- [ ] Test file for `_lib.ts`
+- [ ] `config.toml` entry for the function, even if empty
+- [ ] Any new `deno.json` import-map entries added (`hono`, `@hono/zod-openapi`, `zod`, etc.)
+- [ ] New migration file, if Step 7 surfaced a missing table/column
+- [ ] Step 10's audit run, with any CRITICAL/WARNING finding fixed, not just reported
 
 ## Rules
 

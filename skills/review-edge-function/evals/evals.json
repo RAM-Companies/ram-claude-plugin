@@ -4,7 +4,19 @@
     {
       "id": 0,
       "prompt": "Review supabase/functions/create-quote-from-mac/index.ts for security and convention issues.",
-      "expected_output": "A findings report, one line per finding in the form <file>:<line> - SEVERITY - problem. fix., covering auth (shared secret verified before any data access), CORS (OPTIONS handled, headers on error paths too, and the shared cors.ts helper's own wildcard-fallback branch traced rather than assumed safe), data access (no SELECT *, untyped Supabase client flagged since a generated Database type exists), validation (validatePayload's hand-rolled shape checking noted alongside its own documented rationale for avoiding zod, and that zod isn't in supabase/functions/deno.json's import map regardless — not a fresh 'switch to zod' recommendation that ignores both), error handling (no swallowed errors, no raw error text leaked to the caller), documentation (missing doc comment on the densest business-logic function), and testability (logic split into _lib.ts, tests don't mock the Supabase client). No rewriting of the function, no praise, no vague findings."
+      "expected_output": "A findings report, one line per finding in the form <file>:<line> - SEVERITY - problem. fix., covering auth (shared secret verified before any data access), CORS (OPTIONS handled, headers on error paths too, and the shared cors.ts helper's own wildcard-fallback branch traced rather than assumed safe), data access (no SELECT *, untyped Supabase client flagged since a generated Database type exists), validation (validatePayload's hand-rolled shape checking noted alongside its own documented rationale for avoiding zod, and that zod isn't in supabase/functions/deno.json's import map regardless — not a fresh 'switch to zod' recommendation that ignores both), error handling (no swallowed errors, no raw error text leaked to the caller), documentation (missing doc comment on the densest business-logic function), and testability (logic split into _lib.ts, tests don't mock the Supabase client). No rewriting of the function, no praise, no vague findings.",
+      "files": [],
+      "expectations": [
+        "Findings are reported one per line as <file>:<line> - SEVERITY - problem. fix., not as prose or a rewrite of the function",
+        "Checks that the shared secret (or signature) is verified before any data access, on every code path",
+        "Traces into the shared cors.ts helper's own wildcard-fallback branch rather than assuming 'uses an allowlist' is automatically safe",
+        "Flags the untyped Supabase client (createClient(url, key) instead of createClient<Database>(url, key)) given a generated types file exists",
+        "Notes validatePayload's hand-rolled validation together with its documented rationale and zod's absence from deno.json's import map, rather than issuing a blanket 'switch to zod' recommendation that ignores both",
+        "Flags any swallowed error or any raw/internal error detail leaked to the caller",
+        "Flags the densest business-logic function in _lib.ts for missing a doc comment",
+        "Confirms testability findings are about logic living in _lib.ts and tests not mocking the Supabase client",
+        "Does not rewrite the function and does not include praise or findings that don't change behavior or risk"
+      ]
     }
   ]
 }
