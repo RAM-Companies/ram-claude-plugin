@@ -60,21 +60,20 @@ Reference: [Plugin manifest schema](https://code.claude.com/docs/en/plugins-refe
   "description": "Shared skills and hooks for RAM React/Supabase/Vercel projects",
   "version": "1.0.1",
   "repository": "https://github.com/RAM-Companies/ram-claude-plugin",
-  "skills": "./skills/",
-  "hooks": "./hooks/hooks.json"
+  "skills": "./skills/"
 }
 ```
 
 Field rules:
 
-| Field         | Rule                                                                                                                                                                                                    |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`        | The namespace prefix — skills invoke as `/ram:<skill>`. Keep it short, lowercase, hyphen-only.                                                                                                          |
-| `version`     | Bump this with every release. Users only get updates when the version field changes. Omitting it causes every commit to count as a new version, triggering reinstalls. Use semver: `MAJOR.MINOR.PATCH`. |
-| `description` | One sentence. Shown in the plugin manager.                                                                                                                                                              |
-| `repository`  | Full GitHub URL. Required for marketplace distribution.                                                                                                                                                 |
-| `skills`      | Optional. Points to a custom skill directory; adds to (not replaces) the default `skills/` scan. Our value `"./skills/"` is the default location — redundant but harmless.                              |
-| `hooks`       | Optional. Points to the hooks config file. Our value `"./hooks/hooks.json"` is the default location — redundant but explicit.                                                                           |
+| Field         | Rule                                                                                                                                                                                                                                                          |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`        | The namespace prefix — skills invoke as `/ram:<skill>`. Keep it short, lowercase, hyphen-only.                                                                                                                                                                |
+| `version`     | Bump this with every release. Users only get updates when the version field changes. Omitting it causes every commit to count as a new version, triggering reinstalls. Use semver: `MAJOR.MINOR.PATCH`.                                                       |
+| `description` | One sentence. Shown in the plugin manager.                                                                                                                                                                                                                    |
+| `repository`  | Full GitHub URL. Required for marketplace distribution.                                                                                                                                                                                                       |
+| `skills`      | Optional. Points to a custom skill directory; adds to (not replaces) the default `skills/` scan. Our value `"./skills/"` is the default location — redundant but harmless.                                                                                    |
+| `hooks`       | Do not set this. Claude Code auto-loads `hooks/hooks.json` by convention; declaring it explicitly here too triggers a "Duplicate hooks file detected" error that prevents the whole plugin from loading (see commit `5afb313`). Leave the field out entirely. |
 
 Claude Code ignores unrecognized fields and reports extra fields as warnings (not errors) from `claude plugin validate`. Known component path fields (`skills`, `hooks`, `agents`, `mcpServers`, etc.) are all valid per the official schema.
 
@@ -189,7 +188,7 @@ This resolves to the plugin's installation directory at runtime. Do not hardcode
 
 ### Keep `hooks/hooks.json` and `.claude/settings.json` in sync
 
-`.claude/settings.json` exists solely so this repo dogfoods its own hooks while you develop them — it's never shipped to or read by consumer projects (they only get `hooks/hooks.json`, via `plugin.json`'s `hooks` field). The two files must stay structurally identical: same events, same matchers, same script list, same order, same `timeout`/`statusMessage` — the **only** difference is the path variable in `args`:
+`.claude/settings.json` exists solely so this repo dogfoods its own hooks while you develop them — it's never shipped to or read by consumer projects (they only get `hooks/hooks.json`, auto-loaded by convention — see the `hooks` field rule above). The two files must stay structurally identical: same events, same matchers, same script list, same order, same `timeout`/`statusMessage` — the **only** difference is the path variable in `args`:
 
 | File                    | Path variable                             |
 | ----------------------- | ----------------------------------------- |
@@ -321,7 +320,7 @@ echo '{"hook_event_name":"PostToolUse","tool_name":"Write","tool_input":{"file_p
 
 ### Automated hook tests
 
-`tests/*.test.js` covers all hook scripts using Node's built-in test runner (no dependencies). They spawn each hook as a real child process with controlled stdin and a stubbed `npx`/`npm` on `PATH` (`tests/helpers/`), so they exercise actual exit-code/stdout behavior — including the failure modes that tend to go unnoticed when this plugin runs inside someone else's project (malformed stdin, ESLint/Prettier/tsc missing or misbehaving, timeouts).
+`tests/*.test.js` covers all hook scripts using Node's built-in test runner (no dependencies). They spawn each hook as a real child process with controlled stdin and a stubbed `npx` on `PATH` (`tests/helpers/`), so they exercise actual exit-code/stdout behavior — including the failure modes that tend to go unnoticed when this plugin runs inside someone else's project (malformed stdin, ESLint/Prettier missing or misbehaving, timeouts).
 
 ```bash
 npm test
@@ -349,6 +348,7 @@ Reference: [Version management](https://code.claude.com/docs/en/plugins-referenc
   - **PATCH**: bug fixes in hooks or skill wording
   - **MINOR**: new skill or new hook
   - **MAJOR**: breaking change (renamed skill, changed hook behavior that affects projects)
+- If a feature branch accumulates more than one release-worthy change before merging (e.g. a breaking fix plus a later new skill), bump and tag each on its own PR instead of merging both under one final version — otherwise the MAJOR bump's breaking-change signal never reaches consumers as its own release.
 - Do not bump version for changes to `README.md`, `CLAUDE.md`, or `.gitattributes` only — those don't affect plugin behavior and don't need a release.
 - After bumping version, update the `marketplace.json` if needed (it doesn't carry a version — it points to the repo).
 

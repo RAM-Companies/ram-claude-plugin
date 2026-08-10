@@ -1,0 +1,35 @@
+{
+  "skill_name": "create-edge-function",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Add a new Edge Function called export-quote-pdf that lets a logged-in admin generate a signed download URL for a quote's PDF. Only admins should be able to call it.",
+      "expected_output": "A new supabase/functions/export-quote-pdf/ with index.ts (Deno.serve handler, verify_jwt left at gateway default true, extracts token via extractToken-style helper, uses service-role client + auth.getUser, checks admin role server-side, calls CORS helper, handles OPTIONS), _lib.ts (pure validation/logic, no Supabase client), index.test.ts (Deno tests against _lib.ts only), and a config.toml entry for the function.",
+      "files": [],
+      "expectations": [
+        "Handler leaves verify_jwt at the gateway default (true) rather than disabling it",
+        "Caller identity is extracted from the Authorization header and passed to auth.getUser() on a service-role client, not a second anon-key client",
+        "Admin role is checked server-side (not trusted from a request body value)",
+        "OPTIONS preflight is handled and CORS headers appear on both success and error responses",
+        "Business logic (validation, calculation, branching) lives in _lib.ts with no Supabase client or fetch calls in it",
+        "index.test.ts exercises only _lib.ts's pure functions, without mocking the Supabase client",
+        "config.toml gets an entry for export-quote-pdf, even if empty"
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "I need a new Edge Function called inventory-sync that a partner's server calls directly with a shared secret header — there's no user login involved.",
+      "expected_output": "A new supabase/functions/inventory-sync/ built on Hono + @hono/zod-openapi (external-facing, per Step 3), with Zod schemas defining request/response shape, an OpenAPI spec route, verify_jwt = false in config.toml with an inline comment explaining why, a constant-time shared-secret check as the first thing that runs on every non-preflight path, pure logic split into _lib.ts, index.test.ts testing only the pure logic, and — since inventory_items doesn't exist yet — an explicit call-out naming `supabase migration new inventory_items` rather than a buried comment.",
+      "files": [],
+      "expectations": [
+        "Function is built on Hono + @hono/zod-openapi rather than raw Deno.serve, since it's external-facing",
+        "hono and @hono/zod-openapi (and zod, if used for schemas) are added as npm: specifiers in supabase/functions/deno.json's imports map",
+        "Request/response shapes are defined as Zod schemas on the route, and an OpenAPI spec route is served",
+        "config.toml sets verify_jwt = false with an inline comment explaining why the gateway check is bypassed",
+        "The shared secret is compared with a constant-time comparison, not !== / ===, before any data access, on every non-preflight code path",
+        "Business logic is split into _lib.ts, tested by index.test.ts without mocking the Supabase client",
+        "Response explicitly calls out that the inventory_items table doesn't exist yet and names `supabase migration new inventory_items`, rather than leaving it as a code comment"
+      ]
+    }
+  ]
+}

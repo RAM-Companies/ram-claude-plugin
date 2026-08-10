@@ -70,8 +70,10 @@ This project uses the `ram@ram-companies` Claude Code plugin for shared skills (
 If a user describes something a RAM skill would normally handle (e.g. "review this codebase," "add a migration," "write tests for this function") and the matching skill isn't available or the `ram` plugin isn't installed:
 
 - Don't just report the plugin as missing and stop — that leaves the user to notice the message and copy the command themselves, which is the exact gap this fallback exists to close.
-- Tell them in plain language what's missing and offer to install it (`claude plugin marketplace add RAM-Companies/ram-claude-plugin` and `claude plugin install ram@ram-companies`) — then, if they agree, run those commands yourself rather than making them type it.
-- This changes machine-wide Claude Code state, not just this project, so treat it like any other consequential action: propose it, don't do it silently.
+- Tell them in plain language what's missing and offer to install it — then, if they agree, do it yourself rather than making them type it:
+  - Just `ram`: run the two commands directly — `claude plugin marketplace add RAM-Companies/ram-claude-plugin` and `claude plugin install ram@ram-companies`.
+  - If `.claude/settings.json` declares other marketplaces/plugins too (under `extraKnownMarketplaces`/`enabledPlugins`) that also aren't installed yet: instead of running the two commands per plugin, save `sync-claude-plugins.ps1` locally (`irm https://raw.githubusercontent.com/RAM-Companies/ram-claude-plugin/main/sync-claude-plugins.ps1 -OutFile "$env:TEMP\sync-claude-plugins.ps1"`) and run it once with an **absolute** `-SettingsPath` pointing at this project's `.claude/settings.json` — it syncs everything declared there in one pass, not just `ram`. Note it only syncs what's already declared in that file; it won't add an entry that isn't there. And it takes parameters, so `irm ... | iex` won't work, and a relative `-SettingsPath` would resolve against the temp folder it's saved in, not this project.
+- This changes machine-wide Claude Code state, not just this project, so treat it like any other consequential action: propose it, don't do it silently — and call out explicitly if it involves downloading and executing a script from the internet.
 
 Don't rely on the user typing `/ram:<skill-name>` directly. If that skill doesn't resolve, the client rejects the slash command before it ever reaches you, so this fallback never gets a chance to run — it only helps when they describe what they want in plain English.
 ```
@@ -81,6 +83,24 @@ Caveats to know about before relying on this:
 - **Each teammate still has one unavoidable one-time step**: accepting the workspace trust dialog on their own machine the first time they open the project. Nothing here removes that.
 - **`autoUpdate: true` only helps once the plugin is actually installed.** It keeps an existing install current at every startup — it does not perform the initial install, which is exactly the step the caveat above says isn't reliable. Someone (or Claude, via the CLAUDE.md fallback) still has to get the plugin installed once; `autoUpdate` takes it from there.
 - **Claude Code Desktop has a filed bug** ([anthropics/claude-code#61782](https://github.com/anthropics/claude-code/issues/61782)) where the workspace trust dialog can silently fail to render, blocking the chat entirely with no prompt to accept. If someone hits this, nothing above can help — they'd need to trust that same repo once via another Claude Code surface (CLI or an IDE extension), since trust is stored per git repository root, not per surface.
+
+### Automating the one-time install with `sync-claude-plugins.ps1`
+
+[`sync-claude-plugins.ps1`](sync-claude-plugins.ps1) automates the "someone still has to get the plugin installed once" step above. Point it at a project's `.claude/settings.json` and it registers every marketplace under `extraKnownMarketplaces` and installs/updates every plugin under `enabledPlugins` set to `true` — no manual `claude plugin marketplace add` / `claude plugin install` typing.
+
+```powershell
+./sync-claude-plugins.ps1
+```
+
+Run it from anywhere; a relative `-SettingsPath` resolves against the script's own location, not your terminal's current directory — so it only finds `.claude/settings.json` automatically if this script lives inside the project you're syncing. To target a different project, pass an absolute `-SettingsPath` pointing at that project's settings file. Flags:
+
+- `-SettingsPath <path>` — defaults to `.claude/settings.json`. Point at a different file if the project keeps settings elsewhere.
+- `-Scope <user|project|local>` — defaults to `project`. Passed straight through to `claude plugin install`/`update`.
+- `-DryRun` — print the `claude` commands it would run without executing them.
+
+It also installs the Claude CLI itself (with a confirmation prompt, unless `-DryRun`) if `claude` isn't on `PATH` yet, and runs `claude update` first so the rest of the sync runs against a current CLI. Failures for one marketplace or plugin are reported as warnings and don't stop the rest of the sync.
+
+This still doesn't replace the per-teammate trust-dialog step in the caveats above — it just removes the need for anyone to hand-type install commands once trust is granted.
 
 ## Developing this plugin
 
@@ -96,23 +116,25 @@ then invoke it as `/ram:<skill-name>` and run `/reload-plugins` after edits to p
 
 ## Skills
 
-| Skill               | Invoke                   | Purpose                                                                                   |
-| ------------------- | ------------------------ | ----------------------------------------------------------------------------------------- |
-| `add-migration`     | `/ram:add-migration`     | Create a Supabase migration (DDL + pgTAP tests + type regen)                              |
-| `codebase-review`   | `/ram:codebase-review`   | Full-codebase audit: security, performance, best practices (for vibe-coded apps)          |
-| `deno-tests`        | `/ram:deno-tests`        | Add unit tests to a Supabase Edge Function                                                |
-| `extract-component` | `/ram:extract-component` | Pull a section out of a large file into a standalone component                            |
-| `extract-service`   | `/ram:extract-service`   | Move inline Supabase queries into a service layer                                         |
-| `find-usages`       | `/ram:find-usages`       | Find every file that uses a component, function, or class string                          |
-| `git-workflow`      | `/ram:git-workflow`      | Create a feature branch, write a conventional commit, and open a PR against `dev`         |
-| `new-feature`       | `/ram:new-feature`       | Scaffold a new feature folder following feature-based architecture                        |
-| `pr-review`         | `/ram:pr-review`         | Full PR review: conventions, security, code quality, docs accuracy                        |
-| `setup-env-local`   | `/ram:setup-env-local`   | Write VITE_SUPABASE_ANON_KEY to .env.local for local Supabase development                 |
-| `setup-formatting`  | `/ram:setup-formatting`  | Set up Prettier, ESLint auto-fix, EditorConfig, and VS Code format-on-save                |
-| `ui-update`         | `/ram:ui-update`         | Safely apply a UI change everywhere it appears across the repo                            |
-| `unit-tests`        | `/ram:unit-tests`        | Write Vitest unit tests for pure functions in src/                                        |
-| `update-plugin`     | `/ram:update-plugin`     | Update the installed ram plugin to the latest marketplace version                         |
-| `verify-build`      | `/ram:verify-build`      | Run `tsc --noEmit` + `npm test` before reporting a task done, committing, or opening a PR |
+| Skill                  | Invoke                      | Purpose                                                                                      |
+| ---------------------- | --------------------------- | -------------------------------------------------------------------------------------------- |
+| `add-migration`        | `/ram:add-migration`        | Create a Supabase migration (DDL + pgTAP tests + type regen)                                 |
+| `codebase-review`      | `/ram:codebase-review`      | Full-codebase audit: security, performance, best practices (for vibe-coded apps)             |
+| `create-edge-function` | `/ram:create-edge-function` | Scaffold a new Supabase Edge Function with CORS, auth model, and testable logic split out    |
+| `deno-tests`           | `/ram:deno-tests`           | Add unit tests to a Supabase Edge Function                                                   |
+| `extract-component`    | `/ram:extract-component`    | Pull a section out of a large file into a standalone component                               |
+| `extract-service`      | `/ram:extract-service`      | Move inline Supabase queries into a service layer                                            |
+| `find-usages`          | `/ram:find-usages`          | Find every file that uses a component, function, or class string                             |
+| `git-workflow`         | `/ram:git-workflow`         | Create a feature branch, write a conventional commit, and open a PR against `dev`            |
+| `new-feature`          | `/ram:new-feature`          | Scaffold a new feature folder following feature-based architecture                           |
+| `pr-review`            | `/ram:pr-review`            | Full PR review: conventions, security, code quality, docs accuracy                           |
+| `review-edge-function` | `/ram:review-edge-function` | Audit an existing Supabase Edge Function for auth, CORS, data access, and testability issues |
+| `setup-env-local`      | `/ram:setup-env-local`      | Write VITE_SUPABASE_ANON_KEY to .env.local for local Supabase development                    |
+| `setup-formatting`     | `/ram:setup-formatting`     | Set up Prettier, ESLint auto-fix, EditorConfig, and VS Code format-on-save                   |
+| `ui-update`            | `/ram:ui-update`            | Safely apply a UI change everywhere it appears across the repo                               |
+| `unit-tests`           | `/ram:unit-tests`           | Write Vitest unit tests for pure functions in src/                                           |
+| `update-plugin`        | `/ram:update-plugin`        | Update the installed ram plugin to the latest marketplace version                            |
+| `verify-build`         | `/ram:verify-build`         | Run `tsc --noEmit` + `npm test` before reporting a task done, committing, or opening a PR    |
 
 ## Hooks
 
