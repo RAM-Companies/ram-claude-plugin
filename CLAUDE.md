@@ -320,7 +320,7 @@ echo '{"hook_event_name":"PostToolUse","tool_name":"Write","tool_input":{"file_p
 
 ### Automated hook tests
 
-`tests/*.test.js` covers all hook scripts using Node's built-in test runner (no dependencies). They spawn each hook as a real child process with controlled stdin and a stubbed `npx` on `PATH` (`tests/helpers/`), so they exercise actual exit-code/stdout behavior — including the failure modes that tend to go unnoticed when this plugin runs inside someone else's project (malformed stdin, ESLint/Prettier/tsc missing or misbehaving, timeouts).
+`tests/*.test.js` covers all hook scripts using Node's built-in test runner (no dependencies). They spawn each hook as a real child process with controlled stdin and a stubbed `npx` on `PATH` (`tests/helpers/`), so they exercise actual exit-code/stdout behavior — including the failure modes that tend to go unnoticed when this plugin runs inside someone else's project (malformed stdin, ESLint/Prettier missing or misbehaving, timeouts).
 
 ```bash
 npm test
