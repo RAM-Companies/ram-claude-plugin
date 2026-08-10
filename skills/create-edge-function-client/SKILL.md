@@ -44,7 +44,7 @@ Before picking `<output-path>`, check whether the project already has an API-cli
 
 Use `openapi-fetch`'s `createClient<paths>()` against the generated types, with a fetch middleware that injects the right auth header per Step 1:
 
-- **Browser frontend caller**: pull the current Supabase session JWT (`supabase.auth.getSession()`) and set it as the `Authorization` header. Refresh it per-request rather than caching it once — a cached token expires mid-session.
+- **Browser frontend caller**: pull the current Supabase session JWT (`supabase.auth.getSession()`) and set it as the `Authorization` header with a `Bearer ` prefix (e.g. `Authorization: Bearer <token>`) — the gateway's JWT check rejects a raw token with no scheme. Refresh it per-request rather than caching it once — a cached token expires mid-session.
 - **Server-to-server caller** (another Edge Function or an external backend): read the shared secret from an environment variable (`Deno.env.get(...)` or `process.env`, matching the consumer's runtime) and set it on whatever header the target function's handler checks. This is a plain header set, not a security check — the constant-time comparison requirement from `create-edge-function` Step 4 applies to the _receiving_ handler, not this client.
 
 Keep this wrapper thin — one file, no business logic. It shapes the request/response, nothing else.
