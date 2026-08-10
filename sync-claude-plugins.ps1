@@ -101,6 +101,11 @@ if (-not [System.IO.Path]::IsPathRooted($SettingsPath)) {
     $SettingsPath = Join-Path $PSScriptRoot $SettingsPath
 }
 
+# The project root is the directory containing `.claude/` — used to resolve a
+# relative local-marketplace path the same way Claude Code resolves it, instead
+# of against the caller's working directory.
+$ProjectRoot = Split-Path (Split-Path $SettingsPath -Parent) -Parent
+
 # Always bring the CLI to the latest available version before plugin operations.
 # Failure here is a warning, not fatal — the rest of the sync can still proceed
 # against whatever CLI version is already installed.
@@ -135,18 +140,26 @@ foreach ($market in $marketplaces) {
     $sourceArg = $null
 
     # Normalize supported marketplace source shapes into the single <source> arg.
+    # Git-based marketplace sources are "github", "url", and "git-subdir" per
+    # https://code.claude.com/docs/en/plugin-marketplaces#plugin-sources; "git" is
+    # kept too since it's a harmless extra alias to accept.
     if ($sourceType -eq "github" -and -not [string]::IsNullOrWhiteSpace($marketValue.source.repo)) {
         $sourceArg = "https://github.com/$($marketValue.source.repo)"
     }
-    elseif (($sourceType -eq "url" -or $sourceType -eq "git") -and -not [string]::IsNullOrWhiteSpace($marketValue.source.url)) {
+    elseif (($sourceType -eq "url" -or $sourceType -eq "git" -or $sourceType -eq "git-subdir") -and -not [string]::IsNullOrWhiteSpace($marketValue.source.url)) {
         $sourceArg = $marketValue.source.url
     }
     elseif (($sourceType -eq "path" -or $sourceType -eq "local") -and -not [string]::IsNullOrWhiteSpace($marketValue.source.path)) {
         $sourceArg = $marketValue.source.path
+        # A relative local-marketplace path is relative to the project root
+        # (the directory containing `.claude/`), not the caller's cwd.
+        if (-not [System.IO.Path]::IsPathRooted($sourceArg)) {
+            $sourceArg = Join-Path $ProjectRoot $sourceArg
+        }
     }
 
     if ([string]::IsNullOrWhiteSpace($sourceArg)) {
-        Write-Warning "Skipping marketplace '$marketName' (unsupported source config)."
+        Write-Warning "Skipping marketplace '$marketName' (unsupported source type '$sourceType')."
         continue
     }
 
