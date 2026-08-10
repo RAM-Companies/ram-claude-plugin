@@ -320,7 +320,7 @@ echo '{"hook_event_name":"PostToolUse","tool_name":"Write","tool_input":{"file_p
 
 ### Automated hook tests
 
-`tests/*.test.js` covers all hook scripts using Node's built-in test runner (no dependencies). They spawn each hook as a real child process with controlled stdin and a stubbed `npx`/`npm` on `PATH` (`tests/helpers/`), so they exercise actual exit-code/stdout behavior — including the failure modes that tend to go unnoticed when this plugin runs inside someone else's project (malformed stdin, ESLint/Prettier/tsc missing or misbehaving, timeouts).
+`tests/*.test.js` covers all hook scripts using Node's built-in test runner (no dependencies). They spawn each hook as a real child process with controlled stdin and a stubbed `npx` on `PATH` (`tests/helpers/`), so they exercise actual exit-code/stdout behavior — including the failure modes that tend to go unnoticed when this plugin runs inside someone else's project (malformed stdin, ESLint/Prettier/tsc missing or misbehaving, timeouts).
 
 ```bash
 npm test
@@ -348,6 +348,7 @@ Reference: [Version management](https://code.claude.com/docs/en/plugins-referenc
   - **PATCH**: bug fixes in hooks or skill wording
   - **MINOR**: new skill or new hook
   - **MAJOR**: breaking change (renamed skill, changed hook behavior that affects projects)
+- If a feature branch accumulates more than one release-worthy change before merging (e.g. a breaking fix plus a later new skill), bump and tag each on its own PR instead of merging both under one final version — otherwise the MAJOR bump's breaking-change signal never reaches consumers as its own release.
 - Do not bump version for changes to `README.md`, `CLAUDE.md`, or `.gitattributes` only — those don't affect plugin behavior and don't need a release.
 - After bumping version, update the `marketplace.json` if needed (it doesn't carry a version — it points to the repo).
 
