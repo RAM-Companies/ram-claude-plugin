@@ -70,8 +70,10 @@ This project uses the `ram@ram-companies` Claude Code plugin for shared skills (
 If a user describes something a RAM skill would normally handle (e.g. "review this codebase," "add a migration," "write tests for this function") and the matching skill isn't available or the `ram` plugin isn't installed:
 
 - Don't just report the plugin as missing and stop — that leaves the user to notice the message and copy the command themselves, which is the exact gap this fallback exists to close.
-- Tell them in plain language what's missing and offer to install it (`claude plugin marketplace add RAM-Companies/ram-claude-plugin` and `claude plugin install ram@ram-companies`) — then, if they agree, run those commands yourself rather than making them type it.
-- This changes machine-wide Claude Code state, not just this project, so treat it like any other consequential action: propose it, don't do it silently.
+- Tell them in plain language what's missing and offer to install it — then, if they agree, do it yourself rather than making them type it:
+  - Just `ram`: run the two commands directly — `claude plugin marketplace add RAM-Companies/ram-claude-plugin` and `claude plugin install ram@ram-companies`.
+  - If `.claude/settings.json` declares other marketplaces/plugins too (under `extraKnownMarketplaces`/`enabledPlugins`) that also aren't installed yet: instead of running the two commands per plugin, save `sync-claude-plugins.ps1` locally (`irm https://raw.githubusercontent.com/RAM-Companies/ram-claude-plugin/main/sync-claude-plugins.ps1 -OutFile "$env:TEMP\sync-claude-plugins.ps1"`) and run it once with an **absolute** `-SettingsPath` pointing at this project's `.claude/settings.json` — it syncs everything declared there in one pass, not just `ram`. Note it only syncs what's already declared in that file; it won't add an entry that isn't there. And it takes parameters, so `irm ... | iex` won't work, and a relative `-SettingsPath` would resolve against the temp folder it's saved in, not this project.
+- This changes machine-wide Claude Code state, not just this project, so treat it like any other consequential action: propose it, don't do it silently — and call out explicitly if it involves downloading and executing a script from the internet.
 
 Don't rely on the user typing `/ram:<skill-name>` directly. If that skill doesn't resolve, the client rejects the slash command before it ever reaches you, so this fallback never gets a chance to run — it only helps when they describe what they want in plain English.
 ```
