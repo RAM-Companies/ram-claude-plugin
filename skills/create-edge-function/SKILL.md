@@ -46,11 +46,7 @@ Supabase's function gateway checks the caller's JWT _before_ your code runs — 
 
 ## Step 5 — Handle CORS if a browser calls this
 
-Any function called directly from a browser needs CORS handled, regardless of which framework you picked in Step 3:
-
-- Respond to the `OPTIONS` preflight request before any auth or business logic runs. (Hono's `cors()` middleware does this for you; with raw `Deno.serve` you do it explicitly.)
-- Reflect the request's `Origin` header back when it's on an allowlist — browsers reject `*` for credentialed requests, so a blanket wildcard silently breaks those callers.
-- Include the same CORS headers on **every** response, success and error alike. A CORS header missing only on the error path is the single most common CORS bug — the browser hides the real error behind an opaque CORS failure.
+Any function called directly from a browser needs CORS handled, regardless of which framework you picked in Step 3. The exact rules (preflight, allowlist, error-path headers) are `review-edge-function`'s CORS checklist — apply them now rather than waiting for Step 10's audit, since a CORS gap is the most common way a new function ships broken.
 
 Reuse the project's existing CORS helper or its allowlist logic if there is one, even if you have to adapt it to how your chosen framework wires CORS in (a raw headers object for `Deno.serve`, an origin allowlist function for Hono's `cors()` middleware) — don't re-derive the allowed-origins list from scratch. If no shared CORS helper exists yet and this function is browser-facing, add one under the shared helpers folder rather than inlining CORS logic per function.
 
