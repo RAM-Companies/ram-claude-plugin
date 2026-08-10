@@ -18,7 +18,7 @@
     },
     {
       "id": 1,
-      "prompt": "I need a new Edge Function called inventory-sync that a partner's server calls directly with a shared secret header — there's no user login involved, similar to how create-quote-from-mac works in this repo.",
+      "prompt": "I need a new Edge Function called inventory-sync that a partner's server calls directly with a shared secret header — there's no user login involved.",
       "expected_output": "A new supabase/functions/inventory-sync/ built on Hono + @hono/zod-openapi (external-facing, per Step 3), with Zod schemas defining request/response shape, an OpenAPI spec route, verify_jwt = false in config.toml with an inline comment explaining why, a constant-time shared-secret check as the first thing that runs on every non-preflight path, pure logic split into _lib.ts, index.test.ts testing only the pure logic, and — since inventory_items doesn't exist yet — an explicit call-out naming `supabase migration new inventory_items` rather than a buried comment.",
       "files": [],
       "expectations": [
