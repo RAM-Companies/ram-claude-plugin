@@ -1,4 +1,4 @@
-// Fake `npx` used by tests to control eslint/prettier/tsc behavior without
+// Fake `npx` used by tests to control eslint/prettier behavior without
 // depending on what's actually installed on the machine running the tests.
 // Controlled entirely via env vars — see tests/helpers/run-hook.js.
 function envInt(name, def) {
@@ -18,12 +18,6 @@ const cfg = {
     stdout: process.env.STUB_PRETTIER_STDOUT || "",
     stderr: process.env.STUB_PRETTIER_STDERR || "",
     sleepMs: envInt("STUB_PRETTIER_SLEEP_MS", 0)
-  },
-  tsc: {
-    status: envInt("STUB_TSC_STATUS", 0),
-    stdout: process.env.STUB_TSC_STDOUT || "",
-    stderr: process.env.STUB_TSC_STDERR || "",
-    sleepMs: envInt("STUB_TSC_SLEEP_MS", 0)
   }
 };
 
