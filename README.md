@@ -90,7 +90,7 @@ Caveats to know about before relying on this:
 ./sync-claude-plugins.ps1
 ```
 
-Run it from anywhere; it resolves `.claude/settings.json` relative to the consuming project, not your current directory. Flags:
+Run it from anywhere; a relative `-SettingsPath` resolves against the script's own location, not your terminal's current directory — so it only finds `.claude/settings.json` automatically if this script lives inside the project you're syncing. To target a different project, pass an absolute `-SettingsPath` pointing at that project's settings file. Flags:
 
 - `-SettingsPath <path>` — defaults to `.claude/settings.json`. Point at a different file if the project keeps settings elsewhere.
 - `-Scope <user|project|local>` — defaults to `project`. Passed straight through to `claude plugin install`/`update`.
