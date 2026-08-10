@@ -82,6 +82,24 @@ Caveats to know about before relying on this:
 - **`autoUpdate: true` only helps once the plugin is actually installed.** It keeps an existing install current at every startup — it does not perform the initial install, which is exactly the step the caveat above says isn't reliable. Someone (or Claude, via the CLAUDE.md fallback) still has to get the plugin installed once; `autoUpdate` takes it from there.
 - **Claude Code Desktop has a filed bug** ([anthropics/claude-code#61782](https://github.com/anthropics/claude-code/issues/61782)) where the workspace trust dialog can silently fail to render, blocking the chat entirely with no prompt to accept. If someone hits this, nothing above can help — they'd need to trust that same repo once via another Claude Code surface (CLI or an IDE extension), since trust is stored per git repository root, not per surface.
 
+### Automating the one-time install with `sync-claude-plugins.ps1`
+
+[`sync-claude-plugins.ps1`](sync-claude-plugins.ps1) automates the "someone still has to get the plugin installed once" step above. Point it at a project's `.claude/settings.json` and it registers every marketplace under `extraKnownMarketplaces` and installs/updates every plugin under `enabledPlugins` set to `true` — no manual `claude plugin marketplace add` / `claude plugin install` typing.
+
+```powershell
+./sync-claude-plugins.ps1
+```
+
+Run it from anywhere; it resolves `.claude/settings.json` relative to the consuming project, not your current directory. Flags:
+
+- `-SettingsPath <path>` — defaults to `.claude/settings.json`. Point at a different file if the project keeps settings elsewhere.
+- `-Scope <user|project|local>` — defaults to `project`. Passed straight through to `claude plugin install`/`update`.
+- `-DryRun` — print the `claude` commands it would run without executing them.
+
+It also installs the Claude CLI itself (with a confirmation prompt, unless `-DryRun`) if `claude` isn't on `PATH` yet, and runs `claude update` first so the rest of the sync runs against a current CLI. Failures for one marketplace or plugin are reported as warnings and don't stop the rest of the sync.
+
+This still doesn't replace the per-teammate trust-dialog step in the caveats above — it just removes the need for anyone to hand-type install commands once trust is granted.
+
 ## Developing this plugin
 
 To try a skill from this repo before it's released, load it unreleased with:
